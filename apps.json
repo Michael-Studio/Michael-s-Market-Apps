@@ -1,0 +1,25 @@
+[
+    {
+        "id": "storage tycoon",
+        "icon": "green",
+        "iconClass": "",
+        "iconUrl": "https://github.com/Michael-Studio/Michael-s-Market-Apps/blob/main/icon.png?raw=true",
+        "name": "Storage Tycoon",
+        "category": "Игры",
+        "categoryTag": "games",
+        "fullData": {
+            "iconUrl": "https://github.com/Michael-Studio/Michael-s-Market-Apps/blob/main/icon.png?raw=true",
+            "title": "Storage Tycoon",
+            "size": "134KB",
+            "description": "Начните свой путь в 1980 году как стартап-производитель накопителей для ПК. Постройте технологическую империю, пройдя путь от простейших модулей памяти до современных SSD.",
+            "gallery": [
+                "https://github.com/Michael-Studio/storage-tycoon/blob/main/7e4568c0-7868-4095-b6fa-19f9a75522ac.png?raw=true",
+                "https://github.com/Michael-Studio/storage-tycoon/blob/main/ed1fa7d2-1f7d-4bfa-a3b5-b8374e1c2dc7.png?raw=true",
+                "https://github.com/Michael-Studio/storage-tycoon/blob/main/87fd7826-8517-4fba-acbe-49ab7dcb61fa.png?raw=true"
+            ],
+            "additional": ["27 января 2026", "Русский", "0+"],
+            "developer": "Michael",
+            "downloadUrl": "https://michael-studio.github.io/storage-tycoon"
+        }
+    }
+]
