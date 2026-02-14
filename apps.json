@@ -144,7 +144,9 @@
             "tags": ["games", "crafttarria"],
             "description": "Создавай, исследуй, строй!",
             "gallery": [
-                
+                "https://i.yapx.ru/c67Ei.png",
+                "https://i.yapx.ru/c67FF.png",
+                "https://i.yapx.ru/c67Gj.png"
             ],
             "additional": ["14 февраля 2026"],
             "developer": "Roman",
@@ -152,4 +154,5 @@
         }
     }
 ]
+
 
