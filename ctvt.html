@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>СПЕЦНАЗ VS ТЕРРОРИСТЫ | БЕСКОНЕЧНЫЙ МИР</title>
+    <title>СПЕЦНАЗ VS ТЕРРОРИСТЫ | СЕКРЕТНАЯ ВЕРСИЯ</title>
     <style>
         * {
             margin: 0;
@@ -76,13 +76,84 @@
             font-size: 20px;
         }
         
-        .goal-progress {
-            height: 4px;
-            background: #ff4444;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            transition: width 0.3s;
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #1a2a3a;
+            border-radius: 50px;
+            border: 2px solid #4a6a8a;
+        }
+        
+        .difficulty-btn {
+            padding: 10px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 2px solid transparent;
+        }
+        
+        .difficulty-btn.easy {
+            background: linear-gradient(145deg, #2a5a2a, #1a4a1a);
+            color: #aaffaa;
+            border-color: #00aa00;
+        }
+        
+        .difficulty-btn.easy:hover, .difficulty-btn.easy.active {
+            background: linear-gradient(145deg, #3a6a3a, #2a5a2a);
+            box-shadow: 0 0 20px #00aa00;
+            border-color: #aaffaa;
+        }
+        
+        .difficulty-btn.hard {
+            background: linear-gradient(145deg, #8a4a4a, #6a3a3a);
+            color: #ffaaaa;
+            border-color: #aa0000;
+        }
+        
+        .difficulty-btn.hard:hover, .difficulty-btn.hard.active {
+            background: linear-gradient(145deg, #9a5a5a, #7a4a4a);
+            box-shadow: 0 0 20px #aa0000;
+            border-color: #ffaaaa;
+        }
+        
+        .difficulty-btn.impossible {
+            background: linear-gradient(145deg, #4a1a4a, #2a0a2a);
+            color: #ffaaff;
+            border-color: #aa00aa;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .difficulty-btn.impossible:hover, .difficulty-btn.impossible.active {
+            background: linear-gradient(145deg, #5a2a5a, #3a1a3a);
+            box-shadow: 0 0 30px #aa00aa;
+            border-color: #ffaaff;
+            animation: impossiblePulse 1s infinite;
+        }
+        
+        @keyframes impossiblePulse {
+            0% { text-shadow: 0 0 5px #ff00ff; }
+            50% { text-shadow: 0 0 20px #ff00ff; }
+            100% { text-shadow: 0 0 5px #ff00ff; }
+        }
+        
+        .difficulty-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            color: #aaa;
+            font-size: 14px;
+            text-align: center;
+            border: 1px solid #4a6a8a;
         }
         
         .controls {
@@ -106,11 +177,12 @@
             font-weight: bold;
         }
         
+        /* АБСОЛЮТНО СКРЫТАЯ ЧИТ-ПАНЕЛЬ - БЕЗ ВИЗУАЛЬНЫХ ПРИЗНАКОВ */
         .cheat-panel {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(0);
             background: rgba(10, 20, 30, 0.98);
             border: 3px solid #ffaa00;
             border-radius: 15px;
@@ -120,25 +192,18 @@
             min-width: 350px;
             backdrop-filter: blur(10px);
             box-shadow: 0 0 50px rgba(255,170,0,0.5);
-            z-index: 1000;
-            display: none;
-            border: 3px solid #ffaa00;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+            pointer-events: none;
         }
         
         .cheat-panel.active {
-            display: block;
-            animation: slideIn 0.3s;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -60%);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%);
-            }
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: all;
         }
         
         .cheat-panel h2 {
@@ -243,13 +308,9 @@
             transform: scale(1.05);
         }
         
-        .hint {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: rgba(255,255,255,0.1);
-            font-size: 12px;
-            pointer-events: none;
+        /* Полностью скрытая подсказка - её не видно */
+        .secret-hint {
+            display: none;
         }
     </style>
 </head>
@@ -257,11 +318,10 @@
     <div class="game-wrapper">
         <div class="game-container">
             <canvas id="gameCanvas" width="1200" height="600"></canvas>
-            <div class="hint"><!-- Скрытая подсказка --></div>
             
-            <!-- Чит панель (скрытая, открывается по Ъ) -->
+            <!-- СЕКРЕТНАЯ ЧИТ-ПАНЕЛЬ - НЕТ НИКАКИХ ВИЗУАЛЬНЫХ ПОДСКАЗОК -->
             <div id="cheatPanel" class="cheat-panel">
-                <h2>⚡ ЧИТ-ТЕРМИНАЛ ⚡</h2>
+                <h2>⚡ СЕКРЕТНЫЙ ТЕРМИНАЛ ⚡</h2>
                 <button class="cheat-button" onclick="toggleGodMode()">🛡️ РЕЖИМ БОГА</button>
                 <button class="cheat-button" onclick="toggleInfiniteAmmo()">🔫 БЕСКОНЕЧНЫЕ ПАТРОНЫ</button>
                 <button class="cheat-button" onclick="toggleOneHitKill()">💀 ВАНШОТ</button>
@@ -269,7 +329,7 @@
                 <button class="cheat-button" onclick="spawnEnemies()">👥 +10 ТЕРРОРИСТОВ</button>
                 <button class="cheat-button" onclick="healPlayer()">❤️ ПОЛНОЕ ЛЕЧЕНИЕ</button>
                 <button class="cheat-button danger" onclick="resetGame()">🔄 СБРОСИТЬ ИГРУ</button>
-                <div id="cheatStatus" class="cheat-status">⚠️ ЧИТЫ ОТКЛЮЧЕНЫ</div>
+                <div id="cheatStatus" class="cheat-status">⚡ ЧИТЫ ОТКЛЮЧЕНЫ</div>
             </div>
             
             <!-- Экран победы -->
@@ -293,8 +353,19 @@
             </div>
         </div>
         
+        <!-- Выбор сложности -->
+        <div class="difficulty-selector">
+            <button class="difficulty-btn easy active" onclick="setDifficulty('easy')">🌱 ЛЕГКО</button>
+            <button class="difficulty-btn hard" onclick="setDifficulty('hard')">🔥 СЛОЖНО</button>
+            <button class="difficulty-btn impossible" onclick="setDifficulty('impossible')">💀 НЕВОЗМОЖНО</button>
+        </div>
+        <div id="difficultyInfo" class="difficulty-info">
+            🌱 ЛЕГКО: Враги медленные, мало урона, много патронов, редко стреляют
+        </div>
+        
         <div class="controls">
             <kbd>A</kbd> <kbd>D</kbd> - движение | <kbd>W</kbd> - прыжок | <kbd>ЛКМ</kbd> - стрельба | <kbd>R</kbd> - перезарядка
+            <!-- НЕТ УПОМИНАНИЯ ЧИТОВ! -->
         </div>
     </div>
 
@@ -308,7 +379,46 @@
         const JUMP_FORCE = -12;
         const PLAYER_SPEED = 5;
         const VICTORY_SCORE = 50000;
-        const CHUNK_SIZE = 2000; // Размер чанка для генерации
+        const CHUNK_SIZE = 2000;
+
+        // ==================== СЛОЖНОСТЬ ====================
+        let currentDifficulty = 'easy';
+        
+        const difficultySettings = {
+            easy: {
+                enemySpeed: 0.8,
+                enemyDamage: 5,
+                enemyShootCooldown: 80,
+                enemyHealth: 50,
+                enemySpawnRate: 0.003,
+                maxEnemies: 8,
+                playerMaxHealth: 150,
+                playerStartAmmo: 300,
+                description: '🌱 ЛЕГКО: Враги медленные, мало урона, много патронов, редко стреляют'
+            },
+            hard: {
+                enemySpeed: 2.2,
+                enemyDamage: 20,
+                enemyShootCooldown: 35,
+                enemyHealth: 100,
+                enemySpawnRate: 0.008,
+                maxEnemies: 12,
+                playerMaxHealth: 100,
+                playerStartAmmo: 150,
+                description: '🔥 СЛОЖНО: Враги быстрые, много урона, часто стреляют'
+            },
+            impossible: {
+                enemySpeed: 3.5,
+                enemyDamage: 35,
+                enemyShootCooldown: 20,
+                enemyHealth: 150,
+                enemySpawnRate: 0.015,
+                maxEnemies: 15,
+                playerMaxHealth: 70,
+                playerStartAmmo: 100,
+                description: '💀 НЕВОЗМОЖНО: Враги ОЧЕНЬ быстрые, урон огромный, стреляют очередями, спавнятся толпами!'
+            }
+        };
 
         // ==================== ИГРОК ====================
         const player = {
@@ -331,14 +441,14 @@
             y: player.y,
             angle: 0,
             cooldown: 0,
-            maxCooldown: 8, // Замедлил стрельбу для одной пули
+            maxCooldown: 8,
             ammo: 200,
             maxAmmo: 200,
             reloading: false,
             reloadTimer: 0
         };
 
-        // ==================== ЧИТЫ ====================
+        // ==================== ЧИТЫ (СЕКРЕТНЫЕ) ====================
         const cheats = {
             godMode: false,
             infiniteAmmo: false,
@@ -351,21 +461,47 @@
         let bullets = [];
         let enemyBullets = [];
         let enemies = [];
-        
-        // Процедурная генерация мира
-        let worldChunks = new Map(); // Карта чанков [x, y] -> объекты
+        let worldChunks = new Map();
         let buildings = [];
         let decorations = [];
         
         let score = 0;
         let cameraX = 0;
-        let worldSeed = Math.random() * 1000;
 
         // ==================== УПРАВЛЕНИЕ ====================
         let leftPressed = false;
         let rightPressed = false;
         let jumpPressed = false;
         let reloadPressed = false;
+
+        // ==================== СЕКРЕТНАЯ КОМБИНАЦИЯ ДЛЯ ЧИТОВ ====================
+        let secretCode = '';
+        const cheatCode = 'ъъъ'; // Три раза Ъ
+        let lastKeyTime = 0;
+
+        // ==================== УСТАНОВКА СЛОЖНОСТИ ====================
+        function setDifficulty(difficulty) {
+            currentDifficulty = difficulty;
+            
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.difficulty-btn.${difficulty}`).classList.add('active');
+            
+            document.getElementById('difficultyInfo').innerHTML = difficultySettings[difficulty].description;
+            
+            const settings = difficultySettings[difficulty];
+            player.maxHealth = settings.playerMaxHealth;
+            player.health = settings.playerMaxHealth;
+            weapon.maxAmmo = settings.playerStartAmmo;
+            weapon.ammo = settings.playerStartAmmo;
+            
+            enemies.forEach(enemy => {
+                enemy.speed = settings.enemySpeed;
+                enemy.maxHealth = settings.enemyHealth;
+                enemy.health = settings.enemyHealth;
+            });
+        }
 
         // ==================== ПРОЦЕДУРНАЯ ГЕНЕРАЦИЯ МИРА ====================
         function getChunkKey(chunkX) {
@@ -376,22 +512,18 @@
             const chunkKey = getChunkKey(chunkX);
             if (worldChunks.has(chunkKey)) return;
             
-            console.log(`Генерация чанка ${chunkKey}`);
             const chunkBuildings = [];
             const chunkDecorations = [];
             
-            // Генерируем здания в этом чанке
             for (let i = 0; i < 5; i++) {
                 let x = chunkKey * CHUNK_SIZE + 200 + i * 350 + Math.sin(chunkKey + i) * 100;
-                
-                // Определяем тип здания в зависимости от положения
                 let type = 'house';
                 let width = 80 + Math.floor(Math.sin(chunkKey + i * 2) * 30);
                 let height = 100 + Math.floor(Math.cos(chunkKey + i) * 30);
                 
-                if (x > 5000) { // Дальше 5000 - база террористов
+                if (x > 5000) {
                     type = 'bunker';
-                } else if (x > 2500) { // Средняя зона - смешанная
+                } else if (x > 2500) {
                     type = Math.random() > 0.5 ? 'house' : 'bunker';
                 }
                 
@@ -404,7 +536,6 @@
                 });
             }
             
-            // Генерируем деревья и камни
             for (let i = 0; i < 10; i++) {
                 let x = chunkKey * CHUNK_SIZE + 50 + i * 180 + Math.sin(chunkKey + i * 3) * 50;
                 chunkDecorations.push({
@@ -419,16 +550,13 @@
             });
         }
 
-        // Обновление видимых чанков
         function updateVisibleChunks() {
             const currentChunk = Math.floor(player.x / CHUNK_SIZE);
             
-            // Генерируем чанки вокруг игрока
             for (let i = -2; i <= 2; i++) {
                 generateChunk((currentChunk + i) * CHUNK_SIZE);
             }
             
-            // Собираем все здания из видимых чанков
             buildings = [];
             decorations = [];
             
@@ -444,19 +572,23 @@
         // ==================== ТЕРРОРИСТ ====================
         class Enemy {
             constructor(x) {
+                const settings = difficultySettings[currentDifficulty];
+                
                 this.x = x;
                 this.y = GROUND_LEVEL - 38;
                 this.width = 28;
                 this.height = 38;
                 this.vx = 0;
                 this.vy = 0;
-                this.health = 70;
-                this.maxHealth = 70;
-                this.shootCooldown = 0;
+                this.health = settings.enemyHealth;
+                this.maxHealth = settings.enemyHealth;
+                this.shootCooldown = Math.random() * 30;
                 this.grounded = true;
-                this.speed = 1.5;
+                this.speed = settings.enemySpeed;
                 this.weaponAngle = 0;
                 this.id = Math.random();
+                this.damage = settings.enemyDamage;
+                this.shootDelay = settings.enemyShootCooldown;
             }
             
             update() {
@@ -488,17 +620,36 @@
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
                     if (distance > 0) {
-                        enemyBullets.push({
-                            x: this.x + this.width/2,
-                            y: this.y + this.height/2 - 5,
-                            dx: (dx / distance) * 4.5,
-                            dy: (dy / distance) * 4.5,
-                            size: 4,
-                            damage: cheats.godMode ? 0 : 10,
-                            color: '#FF4444'
-                        });
+                        if (currentDifficulty === 'impossible') {
+                            for (let i = -1; i <= 1; i++) {
+                                setTimeout(() => {
+                                    if (this.health > 0) {
+                                        enemyBullets.push({
+                                            x: this.x + this.width/2,
+                                            y: this.y + this.height/2 - 5,
+                                            dx: (dx / distance) * 5.5 + i * 0.5,
+                                            dy: (dy / distance) * 5.5,
+                                            size: 5,
+                                            damage: cheats.godMode ? 0 : this.damage,
+                                            color: '#FF44AA'
+                                        });
+                                    }
+                                }, i * 30);
+                            }
+                        } else {
+                            enemyBullets.push({
+                                x: this.x + this.width/2,
+                                y: this.y + this.height/2 - 5,
+                                dx: (dx / distance) * (currentDifficulty === 'hard' ? 5 : 4),
+                                dy: (dy / distance) * (currentDifficulty === 'hard' ? 5 : 4),
+                                size: currentDifficulty === 'hard' ? 5 : 4,
+                                damage: cheats.godMode ? 0 : this.damage,
+                                color: currentDifficulty === 'hard' ? '#FF6666' : '#FF4444'
+                            });
+                        }
                     }
-                    this.shootCooldown = 50;
+                    
+                    this.shootCooldown = this.shootDelay;
                 } else {
                     this.shootCooldown--;
                 }
@@ -509,13 +660,23 @@
             }
             
             draw() {
-                ctx.fillStyle = '#1A1A1A';
+                if (currentDifficulty === 'easy') {
+                    ctx.fillStyle = '#2A4A2A';
+                } else if (currentDifficulty === 'hard') {
+                    ctx.fillStyle = '#8A4A4A';
+                } else {
+                    ctx.fillStyle = '#4A1A4A';
+                }
                 ctx.fillRect(this.x, this.y, this.width, this.height);
                 
                 ctx.fillStyle = '#333333';
                 ctx.fillRect(this.x + 2, this.y + 5, this.width - 4, 15);
                 
-                ctx.fillStyle = '#CC0000';
+                if (currentDifficulty === 'impossible') {
+                    ctx.fillStyle = '#AA00AA';
+                } else {
+                    ctx.fillStyle = '#CC0000';
+                }
                 ctx.fillRect(this.x + 4, this.y - 12, 20, 5);
                 
                 ctx.fillStyle = '#8B5A2B';
@@ -542,17 +703,18 @@
                 
                 ctx.fillStyle = '#FF0000';
                 ctx.fillRect(this.x, this.y - 20, this.width, 4);
-                ctx.fillStyle = cheats.oneHitKill ? '#FF00FF' : '#00FF00';
+                
+                let healthColor = currentDifficulty === 'easy' ? '#00FF00' : 
+                                 currentDifficulty === 'hard' ? '#FFFF00' : '#FF00FF';
+                ctx.fillStyle = cheats.oneHitKill ? '#FF00FF' : healthColor;
                 ctx.fillRect(this.x, this.y - 20, (this.health / this.maxHealth) * this.width, 4);
             }
         }
 
         // ==================== ОБНОВЛЕНИЕ ====================
         function update() {
-            // Обновляем видимые чанки
             updateVisibleChunks();
             
-            // Движение игрока
             if (leftPressed) {
                 player.vx = -PLAYER_SPEED;
             } else if (rightPressed) {
@@ -565,14 +727,12 @@
                 player.vy = JUMP_FORCE;
             }
             
-            // Перезарядка
             if (reloadPressed && !weapon.reloading && weapon.ammo < weapon.maxAmmo && !cheats.infiniteAmmo) {
                 weapon.reloading = true;
                 weapon.reloadTimer = 50;
                 reloadPressed = false;
             }
             
-            // Физика
             player.vy += GRAVITY;
             
             if (player.y + player.height > GROUND_LEVEL) {
@@ -586,16 +746,11 @@
             player.x += player.vx;
             player.y += player.vy;
             
-            // Бесконечный мир - нет границ!
-            
-            // Камера следует за игроком
             cameraX = player.x - canvas.width/2 + player.width/2;
             
-            // Оружие
             weapon.x = player.x + player.width/2;
             weapon.y = player.y + player.height/2 - 5;
             
-            // Аимбот - наводим оружие на ближайшего врага
             if (cheats.aimbot && enemies.length > 0) {
                 let closestEnemy = null;
                 let closestDist = Infinity;
@@ -626,7 +781,6 @@
                 weapon.angle = Math.atan2(dy, dx);
             }
             
-            // Перезарядка по таймеру
             if (weapon.reloading) {
                 weapon.reloadTimer--;
                 if (weapon.reloadTimer <= 0) {
@@ -635,7 +789,6 @@
                 }
             }
             
-            // Стрельба - ОДНА ПУЛЯ за выстрел!
             if (weapon.cooldown > 0) weapon.cooldown--;
             
             if (mouse.clicked && weapon.cooldown === 0 && !weapon.reloading && (weapon.ammo > 0 || cheats.infiniteAmmo)) {
@@ -654,35 +807,28 @@
                 }
             }
             
-            // Пули игрока
             bullets = bullets.filter(b => {
                 b.x += b.dx;
                 b.y += b.dy;
                 return b.y > -100 && b.y < canvas.height + 100;
-                // Пули могут лететь бесконечно далеко по X
             });
             
-            // Враги
             enemies.forEach(enemy => enemy.update());
             
-            // Спавн врагов (процедурный, зависит от позиции игрока)
-            if (Math.random() < 0.005 && enemies.length < 10) {
-                // Спавнятся впереди игрока
+            const settings = difficultySettings[currentDifficulty];
+            if (Math.random() < settings.enemySpawnRate && enemies.length < settings.maxEnemies) {
                 let spawnX = player.x + 800 + Math.random() * 500;
                 enemies.push(new Enemy(spawnX));
             }
             
-            // Удаляем врагов, которые слишком далеко сзади
-            enemies = enemies.filter(enemy => enemy.x > player.x - 1000);
+            enemies = enemies.filter(enemy => enemy.x > player.x - 1500);
             
-            // Пули врагов
             enemyBullets = enemyBullets.filter(b => {
                 b.x += b.dx;
                 b.y += b.dy;
                 return b.x > player.x - 1500 && b.x < player.x + 1500 && b.y > -100 && b.y < canvas.height + 100;
             });
             
-            // Попадания
             bullets.forEach((bullet, bulletIndex) => {
                 enemies.forEach((enemy, enemyIndex) => {
                     if (bullet.x > enemy.x && bullet.x < enemy.x + enemy.width &&
@@ -694,7 +840,9 @@
                         
                         if (enemy.health <= 0) {
                             enemies.splice(enemyIndex, 1);
-                            score += 200;
+                            let scoreMultiplier = currentDifficulty === 'easy' ? 100 : 
+                                                 currentDifficulty === 'hard' ? 200 : 400;
+                            score += scoreMultiplier;
                             
                             if (!cheats.enabled && score >= VICTORY_SCORE) {
                                 document.getElementById('victoryScreen').classList.add('active');
@@ -704,7 +852,6 @@
                 });
             });
             
-            // Попадания в игрока
             if (!player.invincible && !cheats.godMode) {
                 enemyBullets.forEach((bullet, index) => {
                     if (bullet.x > player.x && bullet.x < player.x + player.width &&
@@ -730,7 +877,6 @@
                 }
             }
             
-            // UI
             document.getElementById('healthDisplay').innerHTML = Math.max(0, player.health);
             document.getElementById('scoreDisplay').innerHTML = score;
             document.getElementById('ammoDisplay').innerHTML = cheats.infiniteAmmo ? '∞' : `${weapon.ammo}/${weapon.maxAmmo}${weapon.reloading ? ' (R)' : ''}`;
@@ -747,44 +893,45 @@
             ctx.save();
             ctx.translate(-cameraX, 0);
             
-            // Небо
             let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#0A2A4A');
-            gradient.addColorStop(1, '#1A3A5A');
+            if (currentDifficulty === 'easy') {
+                gradient.addColorStop(0, '#0A4A2A');
+                gradient.addColorStop(1, '#1A5A3A');
+            } else if (currentDifficulty === 'hard') {
+                gradient.addColorStop(0, '#4A1A1A');
+                gradient.addColorStop(1, '#5A2A2A');
+            } else {
+                gradient.addColorStop(0, '#1A0A2A');
+                gradient.addColorStop(1, '#2A1A3A');
+            }
             ctx.fillStyle = gradient;
             ctx.fillRect(cameraX - 200, 0, canvas.width + 400, canvas.height);
             
-            // Солнце (относительно мира)
-            ctx.fillStyle = '#FFAA00';
+            ctx.fillStyle = currentDifficulty === 'easy' ? '#FFFF00' : 
+                           currentDifficulty === 'hard' ? '#FF6600' : '#AA00AA';
             ctx.beginPath();
             ctx.arc(player.x + 400, 80, 40, 0, Math.PI * 2);
             ctx.fill();
             
-            // Облака
-            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
             ctx.fillRect(player.x - 300, 60, 150, 40);
             ctx.fillRect(player.x + 100, 90, 200, 50);
             ctx.fillRect(player.x + 600, 40, 180, 45);
             
-            // Земля
             ctx.fillStyle = '#6B4F3A';
             ctx.fillRect(cameraX - 200, GROUND_LEVEL, canvas.width + 400, canvas.height - GROUND_LEVEL + 50);
             
-            // Трава
             ctx.fillStyle = '#3A6B2F';
             ctx.fillRect(cameraX - 200, GROUND_LEVEL - 3, canvas.width + 400, 5);
             
-            // Дорога
             ctx.fillStyle = '#4A4A4A';
             ctx.fillRect(cameraX - 200, GROUND_LEVEL + 20, canvas.width + 400, 15);
             
-            // Разметка дороги
             ctx.fillStyle = '#FFFF00';
             for (let i = Math.floor((cameraX - 200) / 100) * 100; i < cameraX + canvas.width + 200; i += 100) {
                 ctx.fillRect(i, GROUND_LEVEL + 25, 30, 5);
             }
             
-            // Декорации (деревья, камни)
             decorations.forEach(dec => {
                 if (dec.x > cameraX - 200 && dec.x < cameraX + canvas.width + 200) {
                     if (dec.type === 'tree') {
@@ -801,7 +948,6 @@
                 }
             });
             
-            // Здания
             buildings.forEach(building => {
                 if (building.x > cameraX - 200 && building.x < cameraX + canvas.width + 200) {
                     if (building.type === 'house') {
@@ -832,10 +978,8 @@
                 }
             });
             
-            // Враги
             enemies.forEach(enemy => enemy.draw());
             
-            // Пули врагов
             enemyBullets.forEach(b => {
                 ctx.fillStyle = b.color || '#FF4444';
                 ctx.beginPath();
@@ -843,7 +987,6 @@
                 ctx.fill();
             });
             
-            // Игрок
             ctx.fillStyle = '#2A5A2A';
             ctx.fillRect(player.x, player.y, player.width, player.height);
             
@@ -866,7 +1009,6 @@
             ctx.fillStyle = '#00008B';
             ctx.fillRect(player.x + 3, player.y - 18, 24, 5);
             
-            // AK-12
             ctx.save();
             ctx.translate(weapon.x, weapon.y);
             ctx.rotate(weapon.angle);
@@ -894,16 +1036,10 @@
             
             ctx.restore();
             
-            // Пули игрока
             bullets.forEach(b => {
                 ctx.fillStyle = b.color || '#FFD700';
                 ctx.beginPath();
                 ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.fillStyle = 'rgba(255,215,0,0.3)';
-                ctx.beginPath();
-                ctx.arc(b.x - b.dx, b.y - b.dy, b.size * 2, 0, Math.PI * 2);
                 ctx.fill();
             });
             
@@ -915,16 +1051,36 @@
                 ctx.stroke();
             }
             
-            if (cheats.enabled) {
-                ctx.fillStyle = 'rgba(255,0,0,0.2)';
-                ctx.font = 'bold 30px Arial';
-                ctx.fillText('⚡', player.x + 200, 100);
-            }
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.font = 'bold 20px Arial';
+            let diffText = currentDifficulty === 'easy' ? '🌱 ЛЕГКО' : 
+                          currentDifficulty === 'hard' ? '🔥 СЛОЖНО' : '💀 НЕВОЗМОЖНО';
+            ctx.fillText(diffText, player.x - 100, 100);
             
             ctx.restore();
         }
 
-        // ==================== ЧИТЫ ====================
+        // ==================== СЕКРЕТНЫЕ ЧИТЫ ====================
+        function checkSecretCode(key) {
+            const currentTime = Date.now();
+            if (currentTime - lastKeyTime < 1000) { // Сбрасываем через секунду
+                secretCode += key;
+            } else {
+                secretCode = key;
+            }
+            lastKeyTime = currentTime;
+            
+            if (secretCode.includes('ъъъ')) {
+                document.getElementById('cheatPanel').classList.toggle('active');
+                secretCode = ''; // Сбрасываем после активации
+            }
+            
+            // Держим код не длиннее 3 символов
+            if (secretCode.length > 3) {
+                secretCode = secretCode.slice(-3);
+            }
+        }
+
         function toggleGodMode() {
             cheats.godMode = !cheats.godMode;
             cheats.enabled = true;
@@ -971,21 +1127,27 @@
             if (cheats.aimbot) status.push('🎯 АИМБОТ');
             
             document.getElementById('cheatStatus').innerHTML = 
-                status.length > 0 ? '⚡ ЧИТЫ: ' + status.join(' | ') : '⚠️ ЧИТЫ ОТКЛЮЧЕНЫ';
+                status.length > 0 ? '⚡ ЧИТЫ: ' + status.join(' | ') : '⚡ ЧИТЫ ОТКЛЮЧЕНЫ';
         }
 
         // ==================== СБРОС ====================
         function resetGame() {
-            player.health = player.maxHealth;
+            const settings = difficultySettings[currentDifficulty];
+            
+            player.health = settings.playerMaxHealth;
+            player.maxHealth = settings.playerMaxHealth;
             player.x = 300;
             player.y = GROUND_LEVEL - 40;
             player.vx = 0;
             player.vy = 0;
+            
             score = 0;
             enemies = [];
             bullets = [];
             enemyBullets = [];
-            weapon.ammo = weapon.maxAmmo;
+            
+            weapon.ammo = settings.playerStartAmmo;
+            weapon.maxAmmo = settings.playerStartAmmo;
             weapon.reloading = false;
             
             cheats.godMode = false;
@@ -998,7 +1160,6 @@
             document.getElementById('victoryScreen').classList.remove('active');
             document.getElementById('cheatPanel').classList.remove('active');
             
-            // Очищаем чанки для новой игры
             worldChunks.clear();
         }
 
@@ -1010,10 +1171,10 @@
                 e.preventDefault();
             }
             
-            // Скрытая чит панель на Ъ (})
-            if (key === '}' || key === 'ъ' || e.key === '}' || e.key === ']') {
+            // СЕКРЕТНЫЙ КОД - три раза Ъ
+            if (key === 'ъ' || e.key === '}' || e.key === ']') {
                 e.preventDefault();
-                document.getElementById('cheatPanel').classList.toggle('active');
+                checkSecretCode('ъ');
             }
             
             if (key === 'a') leftPressed = true;
@@ -1060,6 +1221,7 @@
 
         // Инициализация
         generateChunk(0);
+        setDifficulty('easy');
         
         function gameLoop() {
             update();
