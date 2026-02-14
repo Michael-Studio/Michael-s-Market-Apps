@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Современный калькулятор</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 16px;
+        }
+
+        .calculator {
+            width: 100%;
+            max-width: 380px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(4px);
+            border-radius: 2.5rem;
+            padding: 24px 20px 32px 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 
+                        0 0 0 1px rgba(56, 189, 248, 0.2) inset;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .display {
+            background: #0a0f1c;
+            border-radius: 2rem;
+            padding: 20px 20px 16px 20px;
+            margin-bottom: 24px;
+            box-shadow: inset 0 8px 12px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(255, 255, 255, 0.05);
+            border: 1px solid #334155;
+        }
+
+        .history {
+            min-height: 28px;
+            font-size: 1rem;
+            color: #94a3b8;
+            text-align: right;
+            word-wrap: break-word;
+            font-family: 'Consolas', monospace;
+            letter-spacing: 0.5px;
+            border-bottom: 1px dashed #334155;
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+        }
+
+        .current-input {
+            font-size: 3rem;
+            font-weight: 500;
+            color: #f1f5f9;
+            text-align: right;
+            word-wrap: break-word;
+            font-family: 'Consolas', monospace;
+            line-height: 1.2;
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            border: none;
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 1.8rem;
+            font-weight: 500;
+            padding: 18px 8px;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 6px 0 #0f172a, 0 8px 16px rgba(0, 0, 0, 0.6);
+            border: 1px solid #334155;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 1px 0 #0f172a, 0 5px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn.operator {
+            background: #0f293f;
+            color: #38bdf8;
+            border-color: #38bdf8;
+            font-weight: 600;
+            box-shadow: 0 6px 0 #0a1a2a;
+        }
+
+        .btn.operator:active {
+            box-shadow: 0 1px 0 #0a1a2a;
+        }
+
+        .btn.equals {
+            background: #0284c7;
+            color: white;
+            border-color: #7dd3fc;
+            font-weight: 700;
+            box-shadow: 0 6px 0 #075985;
+            grid-column: span 2;
+            font-size: 2rem;
+        }
+
+        .btn.equals:active {
+            box-shadow: 0 1px 0 #075985;
+        }
+
+        .btn.clear {
+            background: #2d1b2d;
+            color: #fda4af;
+            border-color: #f43f5e;
+            font-weight: 600;
+            box-shadow: 0 6px 0 #3b0f1f;
+        }
+
+        .btn.clear:active {
+            box-shadow: 0 1px 0 #3b0f1f;
+        }
+
+        .btn.special {
+            background: #1e2a3a;
+            color: #cbd5e1;
+            border-color: #475569;
+            font-size: 1.6rem;
+        }
+
+        .btn[data-value="0"] {
+            grid-column: span 2;
+        }
+
+        /* маленькие адаптивные правки */
+        @media (max-width: 400px) {
+            .btn {
+                font-size: 1.5rem;
+                padding: 16px 4px;
+            }
+            .current-input {
+                font-size: 2.4rem;
+                min-height: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display">
+            <div class="history" id="historyDisplay"></div>
+            <div class="current-input" id="resultDisplay">0</div>
+        </div>
+        <div class="buttons" id="buttonsContainer">
+            <!-- Кнопки будут созданы через JS, но можно и вручную. Сделаем через JS чтобы чисто и легко править -->
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // Определение кнопок: текст, классы, значение (data-value) и оператор/тип
+            const buttonsConfig = [
+                { text: 'C', class: 'clear', value: 'clear', type: 'clear' },
+                { text: '⌫', class: 'special', value: 'backspace', type: 'backspace' },
+                { text: '%', class: 'operator', value: '%', type: 'operator' },
+                { text: '÷', class: 'operator', value: '/', type: 'operator' },
+                
+                { text: '7', class: '', value: '7', type: 'number' },
+                { text: '8', class: '', value: '8', type: 'number' },
+                { text: '9', class: '', value: '9', type: 'number' },
+                { text: '×', class: 'operator', value: '*', type: 'operator' },
+                
+                { text: '4', class: '', value: '4', type: 'number' },
+                { text: '5', class: '', value: '5', type: 'number' },
+                { text: '6', class: '', value: '6', type: 'number' },
+                { text: '−', class: 'operator', value: '-', type: 'operator' },
+                
+                { text: '1', class: '', value: '1', type: 'number' },
+                { text: '2', class: '', value: '2', type: 'number' },
+                { text: '3', class: '', value: '3', type: 'number' },
+                { text: '+', class: 'operator', value: '+', type: 'operator' },
+                
+                { text: '0', class: '', value: '0', type: 'number' },
+                { text: '.', class: 'special', value: '.', type: 'decimal' },
+                { text: '=', class: 'equals', value: '=', type: 'equals' }
+            ];
+
+            const buttonsContainer = document.getElementById('buttonsContainer');
+            buttonsConfig.forEach(btn => {
+                const button = document.createElement('button');
+                button.className = `btn ${btn.class}`;
+                button.textContent = btn.text;
+                button.setAttribute('data-value', btn.value);
+                button.setAttribute('data-type', btn.type);
+                buttonsContainer.appendChild(button);
+            });
+
+            // Элементы дисплея
+            const historyDisplay = document.getElementById('historyDisplay');
+            const resultDisplay = document.getElementById('resultDisplay');
+
+            // Состояние калькулятора
+            let currentOperand = '0';
+            let previousOperand = '';
+            let operation = null;
+            let resetScreen = false;  // флаг что при следующем вводе числа нужно стереть текущее (после оператора или равно)
+            let lastEqual = false;    // для предотвращения повторного равно без сброса
+
+            // Обновление дисплея
+            function updateDisplay() {
+                resultDisplay.textContent = currentOperand.length > 12 ? parseFloat(currentOperand).toExponential(6) : currentOperand;
+
+                // формируем строку истории
+                if (operation && previousOperand !== '') {
+                    // показываем предыдущее число и оператор
+                    let opSymbol = operation;
+                    if (operation === '/') opSymbol = '÷';
+                    if (operation === '*') opSymbol = '×';
+                    historyDisplay.textContent = `${previousOperand} ${opSymbol}`;
+                } else {
+                    historyDisplay.textContent = '';
+                }
+            }
+
+            // Ввод цифр
+            function appendNumber(number) {
+                if (resetScreen) {
+                    currentOperand = '';
+                    resetScreen = false;
+                }
+                if (number === '.' && currentOperand.includes('.')) return; // предотвращаем множественные точки
+                if (currentOperand === '0' && number !== '.') {
+                    currentOperand = number; // убираем ведущий ноль
+                } else {
+                    currentOperand += number;
+                }
+                lastEqual = false;
+                updateDisplay();
+            }
+
+            // Выбор оператора
+            function chooseOperator(op) {
+                if (op === '%') {
+                    // Процент: преобразуем текущее число в процент от предыдущего если есть, иначе просто /100
+                    if (previousOperand !== '' && operation && !resetScreen) {
+                        // Сложная логика: если уже есть оператор, сначала вычислим? Для простоты выполним как процент от предыдущего
+                        const prev = parseFloat(previousOperand);
+                        const curr = parseFloat(currentOperand);
+                        if (!isNaN(prev) && !isNaN(curr)) {
+                            currentOperand = (prev * curr / 100).toString();
+                            operation = null; // после вычисления процента операция сбрасывается? Лучше оставить как финальное значение
+                            previousOperand = '';
+                            resetScreen = true;
+                        } else {
+                            currentOperand = (curr / 100).toString();
+                            resetScreen = true;
+                        }
+                    } else {
+                        // просто процент от текущего
+                        const curr = parseFloat(currentOperand);
+                        if (!isNaN(curr)) {
+                            currentOperand = (curr / 100).toString();
+                        }
+                        resetScreen = true;
+                    }
+                    lastEqual = false;
+                    updateDisplay();
+                    return;
+                }
+
+                if (currentOperand === '' && previousOperand !== '') {
+                    // если ничего не ввели, но оператор меняем
+                    operation = op;
+                    updateDisplay();
+                    return;
+                }
+
+                if (previousOperand === '') {
+                    // первый оператор
+                    previousOperand = currentOperand;
+                    operation = op;
+                    resetScreen = true;
+                } else if (operation) {
+                    // уже есть ожидающий оператор — выполняем вычисление перед новым
+                    compute();
+                    operation = op; // новый оператор
+                    previousOperand = currentOperand; // результат становится предыдущим
+                    resetScreen = true;
+                }
+                lastEqual = false;
+                updateDisplay();
+            }
+
+            // Вычисление
+            function compute() {
+                if (previousOperand === '' || operation === null || operation === '%' || operation === '=') return;
+
+                let result;
+                const prev = parseFloat(previousOperand);
+                const curr = parseFloat(currentOperand);
+
+                if (isNaN(prev) || isNaN(curr)) return;
+
+                switch (operation) {
+                    case '+':
+                        result = prev + curr;
+                        break;
+                    case '-':
+                        result = prev - curr;
+                        break;
+                    case '*':
+                        result = prev * curr;
+                        break;
+                    case '/':
+                        if (curr === 0) {
+                            alert('Деление на ноль невозможно');
+                            clearAll();
+                            return;
+                        }
+                        result = prev / curr;
+                        break;
+                    default:
+                        return;
+                }
+
+                // Округление до 10 знаков для устранения погрешностей
+                result = Math.round(result * 1e10) / 1e10;
+
+                currentOperand = result.toString();
+                operation = null;
+                previousOperand = '';
+                resetScreen = true;
+                lastEqual = true;  // пометим что было равно
+                updateDisplay();
+            }
+
+            // Обработка равно
+            function handleEquals() {
+                if (previousOperand !== '' && operation && !resetScreen) {
+                    compute();
+                } else if (lastEqual && previousOperand === '' && operation === null) {
+                    // повторное равно — игнорируем или можно повторить последнее действие? для простоты ничего
+                } else {
+                    // если нажали равно без оператора — просто показываем то же число
+                    resetScreen = true;
+                }
+                // сбрасываем оператор чтобы не висел в истории
+                operation = null;
+                previousOperand = '';
+                updateDisplay();
+            }
+
+            // Очистка всего (C)
+            function clearAll() {
+                currentOperand = '0';
+                previousOperand = '';
+                operation = null;
+                resetScreen = false;
+                lastEqual = false;
+                updateDisplay();
+            }
+
+            // Бэкспейс (⌫)
+            function backspace() {
+                if (resetScreen) return; // не удаляем если сейчас начнём новое число
+                if (currentOperand.length > 1) {
+                    currentOperand = currentOperand.slice(0, -1);
+                } else {
+                    currentOperand = '0';
+                }
+                updateDisplay();
+            }
+
+            // Обработчик кликов
+            function handleButtonClick(event) {
+                const target = event.target.closest('.btn');
+                if (!target) return;
+
+                const value = target.getAttribute('data-value');
+                const type = target.getAttribute('data-type');
+
+                // Обработка по типам
+                switch (type) {
+                    case 'number':
+                        appendNumber(value);
+                        break;
+                    case 'decimal':
+                        appendNumber('.');
+                        break;
+                    case 'operator':
+                        chooseOperator(value);
+                        break;
+                    case 'equals':
+                        handleEquals();
+                        break;
+                    case 'clear':
+                        clearAll();
+                        break;
+                    case 'backspace':
+                        backspace();
+                        break;
+                    default:
+                        // fallback если нет type (например специальные)
+                        if (value === '%') chooseOperator('%');
+                        else if (value === 'clear') clearAll();
+                        else if (value === 'backspace') backspace();
+                }
+            }
+
+            // Обработка клавиатуры
+            function handleKeyboard(e) {
+                const key = e.key;
+                // числа и точка
+                if (/\d/.test(key)) {
+                    e.preventDefault();
+                    appendNumber(key);
+                } else if (key === '.') {
+                    e.preventDefault();
+                    appendNumber('.');
+                } else if (key === '+' || key === '-') {
+                    e.preventDefault();
+                    chooseOperator(key);
+                } else if (key === '*' || key === '×') {
+                    e.preventDefault();
+                    chooseOperator('*');
+                } else if (key === '/' || key === '÷') {
+                    e.preventDefault();
+                    chooseOperator('/');
+                } else if (key === '%') {
+                    e.preventDefault();
+                    chooseOperator('%');
+                } else if (key === '=' || key === 'Enter') {
+                    e.preventDefault();
+                    handleEquals();
+                } else if (key === 'Backspace') {
+                    e.preventDefault();
+                    backspace();
+                } else if (key === 'Escape' || key === 'Delete' || key === 'c' || key === 'C') {
+                    e.preventDefault();
+                    clearAll();
+                }
+            }
+
+            // Инициализация слушателей
+            buttonsContainer.addEventListener('click', handleButtonClick);
+            window.addEventListener('keydown', handleKeyboard);
+
+            // Начальное состояние
+            updateDisplay();
+        })();
+    </script>
+</body>
+</html>
