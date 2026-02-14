@@ -1,0 +1,2536 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>PC Building Tycoon · Базовая сборка</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', 'Segoe UI', 'Arial', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 8px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.theme-dark {
+            background: #0a0a0a;
+            color: #9fdf9f;
+        }
+
+        body.theme-light {
+            background: #f0f0f0;
+            color: #1a3a1a;
+        }
+
+        .game-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            background: inherit;
+            border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(0, 100, 0, 0.3);
+            overflow: hidden;
+            border: 1px solid #2a5a2a;
+        }
+
+        body.theme-light .game-wrapper {
+            border-color: #4caf4c;
+            box-shadow: 0 8px 24px rgba(0, 60, 0, 0.2);
+        }
+
+        /* ЭКРАН НАСТРОЙКИ */
+        #setupScreen {
+            padding: 24px 16px;
+        }
+
+        body.theme-dark #setupScreen {
+            background: #0a0a0a;
+        }
+
+        body.theme-light #setupScreen {
+            background: #f0f0f0;
+        }
+
+        .setup-title {
+            font-size: 26px;
+            font-weight: 500;
+            color: #3a9b3a;
+            text-align: center;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #2a5a2a;
+            padding-bottom: 16px;
+        }
+
+        body.theme-light .setup-title {
+            color: #2a5a2a;
+            border-color: #4caf4c;
+        }
+
+        .setup-card {
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #2a5a2a;
+        }
+
+        body.theme-dark .setup-card {
+            background: #121212;
+            border-color: #2a5a2a;
+        }
+
+        body.theme-light .setup-card {
+            background: #ffffff;
+            border-color: #4caf4c;
+        }
+
+        .setup-card label {
+            font-size: 14px;
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+
+        body.theme-dark .setup-card label {
+            color: #6ba86b;
+        }
+
+        body.theme-light .setup-card label {
+            color: #2a5a2a;
+        }
+
+        .setup-card input, .setup-card select {
+            font-size: 18px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            width: 100%;
+            outline: none;
+        }
+
+        body.theme-dark .setup-card input, body.theme-dark .setup-card select {
+            background: #1e1e1e;
+            border: 1px solid #2a5a2a;
+            color: #9fdf9f;
+        }
+
+        body.theme-light .setup-card input, body.theme-light .setup-card select {
+            background: #f0f0f0;
+            border: 1px solid #4caf4c;
+            color: #1a3a1a;
+        }
+
+        .setup-card select option {
+            background: inherit;
+        }
+
+        .country-grid, .version-grid, .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .theme-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .country-btn, .version-btn, .theme-btn, .load-btn {
+            border: 1px solid #2a5a2a;
+            font-size: 16px;
+            padding: 14px 0;
+            border-radius: 40px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-align: center;
+        }
+
+        body.theme-dark .country-btn, body.theme-dark .version-btn, body.theme-dark .theme-btn, body.theme-dark .load-btn {
+            background: #1e1e1e;
+            color: #7ab87a;
+        }
+
+        body.theme-light .country-btn, body.theme-light .version-btn, body.theme-light .theme-btn, body.theme-light .load-btn {
+            background: #ffffff;
+            color: #2a5a2a;
+            border-color: #4caf4c;
+        }
+
+        .country-btn.active, .version-btn.active, .theme-btn.active {
+            background: #2a5a2a;
+            border-color: #4caf4c;
+            color: #ffffff;
+        }
+
+        .load-btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .language-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .lang-btn {
+            border: 1px solid #2a5a2a;
+            font-size: 14px;
+            padding: 14px 0;
+            border-radius: 40px;
+            font-weight: 400;
+            cursor: pointer;
+        }
+
+        body.theme-dark .lang-btn {
+            background: #1e1e1e;
+            color: #7ab87a;
+        }
+
+        body.theme-light .lang-btn {
+            background: #ffffff;
+            color: #2a5a2a;
+            border-color: #4caf4c;
+        }
+
+        .lang-btn.active {
+            background: #2a5a2a;
+            color: #ffffff;
+        }
+
+        .start-btn {
+            background: #2a5a2a;
+            border: none;
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 500;
+            padding: 18px 0;
+            border-radius: 60px;
+            width: 100%;
+            margin-top: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 100, 0, 0.3);
+        }
+
+        .start-btn:active {
+            background: #1e4a1e;
+        }
+
+        /* ИГРОВОЙ ЭКРАН */
+        #gameScreen {
+            display: none;
+            min-height: 100%;
+        }
+
+        body.theme-dark #gameScreen {
+            background: #0a0a0a;
+        }
+
+        body.theme-light #gameScreen {
+            background: #f0f0f0;
+        }
+
+        .game-header {
+            padding: 16px;
+            border-bottom: 1px solid #2a5a2a;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        body.theme-dark .game-header {
+            background: #0f0f0f;
+        }
+
+        body.theme-light .game-header {
+            background: #ffffff;
+        }
+
+        .company-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        body.theme-dark .company-name {
+            color: #9fdf9f;
+        }
+
+        body.theme-light .company-name {
+            color: #2a5a2a;
+        }
+
+        .year-display {
+            font-size: 20px;
+            font-weight: 500;
+            padding: 6px 16px;
+            border-radius: 40px;
+            border: 1px solid #2a5a2a;
+        }
+
+        body.theme-dark .year-display {
+            color: #7ab87a;
+            background: #1a1a1a;
+        }
+
+        body.theme-light .year-display {
+            color: #2a5a2a;
+            background: #e0e0e0;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-radius: 40px;
+            border: 1px solid #2a5a2a;
+        }
+
+        body.theme-dark .stats-row {
+            background: #121212;
+        }
+
+        body.theme-light .stats-row {
+            background: #ffffff;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+        }
+
+        body.theme-dark .stat-label {
+            color: #6ba86b;
+        }
+
+        body.theme-light .stat-label {
+            color: #2a5a2a;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        body.theme-dark .stat-value {
+            color: #9fdf9f;
+        }
+
+        body.theme-light .stat-value {
+            color: #1a3a1a;
+        }
+
+        .save-panel {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0;
+            justify-content: flex-end;
+        }
+
+        .save-btn {
+            background: #2a5a2a;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .save-btn:active {
+            background: #1e4a1e;
+        }
+
+        .game-content {
+            padding: 16px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        /* ========== PC MODE ========== */
+        .game-content.pc-mode {
+            max-height: none;
+            overflow-y: visible;
+        }
+
+        .pc-mode .components-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+        }
+
+        .pc-mode .business-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+        }
+
+        .pc-mode .game-dev-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+        }
+
+        .pc-mode .pc-case {
+            grid-template-columns: repeat(4, 1fr) !important;
+        }
+
+        .pc-mode .tabs {
+            gap: 12px;
+        }
+
+        .pc-mode .tab-btn {
+            flex: 0 1 auto;
+            padding: 12px 20px;
+            font-size: 16px;
+        }
+
+        /* ========== MOBILE MODE ========== */
+        .game-content:not(.pc-mode) .components-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        .game-content:not(.pc-mode) .business-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        .game-content:not(.pc-mode) .game-dev-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        .game-content:not(.pc-mode) .pc-case {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        .game-content:not(.pc-mode) .tabs {
+            gap: 6px;
+        }
+
+        .game-content:not(.pc-mode) .tab-btn {
+            flex: 1 0 auto;
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+        .components-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .business-grid {
+            display: grid;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .game-dev-grid {
+            display: grid;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .pc-case {
+            border-radius: 20px;
+            padding: 16px;
+            margin: 16px 0;
+            display: grid;
+            gap: 12px;
+            border: 2px solid #2a5a2a;
+        }
+
+        body.theme-dark .pc-case {
+            background: #0f0f0f;
+        }
+
+        body.theme-light .pc-case {
+            background: #ffffff;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+
+        .tab-btn {
+            border: 1px solid #2a5a2a;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-align: center;
+        }
+
+        body.theme-dark .tab-btn {
+            background: #1a1a1a;
+            color: #7ab87a;
+        }
+
+        body.theme-light .tab-btn {
+            background: #ffffff;
+            color: #2a5a2a;
+        }
+
+        .tab-btn.active {
+            background: #2a5a2a;
+            color: #ffffff;
+        }
+
+        .comp-card {
+            border-radius: 16px;
+            padding: 16px 12px;
+            border: 1px solid #2a5a2a;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+        }
+
+        body.theme-dark .comp-card {
+            background: #121212;
+        }
+
+        body.theme-light .comp-card {
+            background: #ffffff;
+        }
+
+        .comp-card:active {
+            transform: scale(0.98);
+        }
+
+        .comp-card.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .comp-card.delayed {
+            border-color: #b58a5a;
+        }
+
+        .comp-card.delayed::after {
+            content: "⏳";
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            color: #b58a5a;
+            font-size: 16px;
+        }
+
+        .comp-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        body.theme-dark .comp-name {
+            color: #9fdf9f;
+        }
+
+        body.theme-light .comp-name {
+            color: #2a5a2a;
+        }
+
+        .comp-brand {
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        body.theme-dark .comp-brand {
+            color: #7ab87a;
+        }
+
+        body.theme-light .comp-brand {
+            color: #4caf4c;
+        }
+
+        .comp-model {
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        body.theme-dark .comp-model {
+            color: #6ba86b;
+        }
+
+        body.theme-light .comp-model {
+            color: #3a8a3a;
+        }
+
+        .comp-price {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        body.theme-dark .comp-price {
+            color: #9fdf9f;
+        }
+
+        body.theme-light .comp-price {
+            color: #2a5a2a;
+        }
+
+        .comp-year {
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        body.theme-dark .comp-year {
+            color: #5a8f5a;
+        }
+
+        body.theme-light .comp-year {
+            color: #7ab87a;
+        }
+
+        .pc-slot {
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid #2a5a2a;
+            position: relative;
+        }
+
+        body.theme-dark .pc-slot {
+            background: #121212;
+        }
+
+        body.theme-light .pc-slot {
+            background: #f0f0f0;
+        }
+
+        .slot-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        body.theme-dark .slot-label {
+            color: #6ba86b;
+        }
+
+        body.theme-light .slot-label {
+            color: #2a5a2a;
+        }
+
+        .slot-content {
+            font-size: 11px;
+            font-weight: 400;
+            min-height: 32px;
+            word-break: break-word;
+        }
+
+        body.theme-dark .slot-content {
+            color: #9fdf9f;
+        }
+
+        body.theme-light .slot-content {
+            color: #1a3a1a;
+        }
+
+        .slot-content.empty {
+            color: #3a5a3a;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #8b3a3a;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #b56b6b;
+        }
+
+        .pc-slot:hover .remove-btn {
+            display: flex;
+        }
+
+        .remove-btn:active {
+            background: #a34a4a;
+        }
+
+        .minigame-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .minigame-container {
+            border: 2px solid #2a5a2a;
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        body.theme-dark .minigame-container {
+            background: #121212;
+        }
+
+        body.theme-light .minigame-container {
+            background: #ffffff;
+        }
+
+        .minigame-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        body.theme-dark .minigame-title {
+            color: #9fdf9f;
+        }
+
+        body.theme-light .minigame-title {
+            color: #2a5a2a;
+        }
+
+        .minigame-area {
+            min-height: 200px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .socket-game {
+            width: 200px;
+            height: 200px;
+            border: 2px solid #2a5a2a;
+            border-radius: 16px;
+            position: relative;
+        }
+
+        body.theme-dark .socket-game {
+            background: #1a1a1a;
+        }
+
+        body.theme-light .socket-game {
+            background: #e0e0e0;
+        }
+
+        .cpu-chip {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #6ba86b;
+            border-radius: 8px;
+            position: absolute;
+            cursor: move;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        body.theme-dark .cpu-chip {
+            background: #4a7a4a;
+            color: #9fdf9f;
+        }
+
+        body.theme-light .cpu-chip {
+            background: #a0d0a0;
+            color: #1a3a1a;
+        }
+
+        .socket-target {
+            width: 70px;
+            height: 70px;
+            border: 2px dashed #6ba86b;
+            border-radius: 8px;
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        body.theme-dark .socket-target {
+            color: #5a8f5a;
+        }
+
+        body.theme-light .socket-target {
+            color: #2a5a2a;
+        }
+
+        .paste-game {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px;
+            width: 200px;
+            height: 200px;
+            border: 2px solid #2a5a2a;
+            border-radius: 16px;
+            padding: 4px;
+        }
+
+        body.theme-dark .paste-game {
+            background: #1a1a1a;
+        }
+
+        body.theme-light .paste-game {
+            background: #e0e0e0;
+        }
+
+        .paste-cell {
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        body.theme-dark .paste-cell {
+            background: #2a2a2a;
+        }
+
+        body.theme-light .paste-cell {
+            background: #c0c0c0;
+        }
+
+        .paste-cell.filled {
+            background: #6ba86b;
+        }
+
+        .cable-game {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            width: 200px;
+            height: 200px;
+            border: 2px solid #2a5a2a;
+            border-radius: 16px;
+            padding: 4px;
+        }
+
+        body.theme-dark .cable-game {
+            background: #1a1a1a;
+        }
+
+        body.theme-light .cable-game {
+            background: #e0e0e0;
+        }
+
+        .cable-cell {
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        body.theme-dark .cable-cell {
+            background: #2a2a2a;
+        }
+
+        body.theme-light .cable-cell {
+            background: #c0c0c0;
+        }
+
+        .cable-cell.path {
+            background: #6ba86b;
+        }
+
+        .minigame-btn {
+            background: #2a5a2a;
+            border: none;
+            color: white;
+            font-size: 16px;
+            padding: 12px 24px;
+            border-radius: 40px;
+            margin-top: 20px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .minigame-btn:active {
+            background: #1e4a1e;
+        }
+
+        .minigame-btn:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .minigame-status {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        body.theme-dark .minigame-status {
+            color: #b58a5a;
+        }
+
+        body.theme-light .minigame-status {
+            color: #b58a5a;
+        }
+
+        .business-card {
+            border: 1px solid #2a5a2a;
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+        }
+
+        body.theme-dark .business-card {
+            background: #121212;
+        }
+
+        body.theme-light .business-card {
+            background: #ffffff;
+        }
+
+        .business-card .title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        body.theme-dark .business-card .title {
+            color: #9fdf9f;
+        }
+
+        body.theme-light .business-card .title {
+            color: #2a5a2a;
+        }
+
+        .business-card .income {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        body.theme-dark .business-card .income {
+            color: #7ab87a;
+        }
+
+        body.theme-light .business-card .income {
+            color: #4caf4c;
+        }
+
+        .business-card .upgrade {
+            font-size: 12px;
+        }
+
+        body.theme-dark .business-card .upgrade {
+            color: #b58a5a;
+        }
+
+        body.theme-light .business-card .upgrade {
+            color: #b58a5a;
+        }
+
+        .business-stats {
+            border: 1px solid #2a5a2a;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        body.theme-dark .business-stats {
+            background: #121212;
+        }
+
+        body.theme-light .business-stats {
+            background: #ffffff;
+        }
+
+        .game-dev-card {
+            border: 1px solid #2a5a2a;
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+        }
+
+        body.theme-dark .game-dev-card {
+            background: #121212;
+        }
+
+        body.theme-light .game-dev-card {
+            background: #ffffff;
+        }
+
+        .game-dev-card .genre {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        body.theme-dark .game-dev-card .genre {
+            color: #9fdf9f;
+        }
+
+        body.theme-light .game-dev-card .genre {
+            color: #2a5a2a;
+        }
+
+        .game-dev-card .income {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        body.theme-dark .game-dev-card .income {
+            color: #7ab87a;
+        }
+
+        body.theme-light .game-dev-card .income {
+            color: #4caf4c;
+        }
+
+        .game-dev-card .progress {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        body.theme-dark .game-dev-card .progress {
+            color: #b58a5a;
+        }
+
+        body.theme-light .game-dev-card .progress {
+            color: #b58a5a;
+        }
+
+        .game-dev-card .develop {
+            font-size: 12px;
+            color: #2a5a2a;
+            background: #4caf4c;
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+
+        .sell-btn {
+            background: #2a5a2a;
+            border: none;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 500;
+            padding: 18px 0;
+            border-radius: 60px;
+            width: 100%;
+            margin: 16px 0;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 60, 0, 0.3);
+        }
+
+        .sell-btn:active {
+            background: #1e4a1e;
+        }
+
+        .sell-btn.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .log-panel {
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 14px;
+            margin: 16px 0;
+            border-left: 4px solid #2a5a2a;
+            border: 1px solid #2a5a2a;
+        }
+
+        body.theme-dark .log-panel {
+            background: #121212;
+            color: #9fdf9f;
+        }
+
+        body.theme-light .log-panel {
+            background: #ffffff;
+            color: #2a5a2a;
+        }
+
+        .availability-note {
+            font-size: 12px;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        body.theme-dark .availability-note {
+            color: #b58a5a;
+        }
+
+        body.theme-light .availability-note {
+            color: #b58a5a;
+        }
+
+        .deliveries-panel {
+            border: 1px solid #2a5a2a;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        body.theme-dark .deliveries-panel {
+            background: #121212;
+        }
+
+        body.theme-light .deliveries-panel {
+            background: #ffffff;
+        }
+
+        .deliveries-title {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        body.theme-dark .deliveries-title {
+            color: #9fdf9f;
+        }
+
+        body.theme-light .deliveries-title {
+            color: #2a5a2a;
+        }
+
+        .delivery-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            padding: 4px 0;
+        }
+
+        body.theme-dark .delivery-item {
+            color: #7ab87a;
+        }
+
+        body.theme-light .delivery-item {
+            color: #4caf4c;
+        }
+    </style>
+</head>
+<body class="theme-dark">
+<div class="game-wrapper">
+    <!-- НАСТРОЙКИ -->
+    <div id="setupScreen">
+        <div class="setup-title">PC BUILDING TYCOON · БАЗОВАЯ СБОРКА</div>
+        
+        <div class="language-selector" id="languageSelector">
+            <button class="lang-btn" data-lang="ru">РУС</button>
+            <button class="lang-btn" data-lang="de">DEU</button>
+            <button class="lang-btn" data-lang="jp">日本語</button>
+            <button class="lang-btn" data-lang="pl">POL</button>
+        </div>
+
+        <div class="setup-card">
+            <label id="lblCompany">Название компании</label>
+            <input type="text" id="companyNameInput" value="Pinkman Systems">
+        </div>
+
+        <div class="setup-card">
+            <label id="lblCeo">Имя директора</label>
+            <input type="text" id="ceoNameInput" value="Jessie Pinkman">
+        </div>
+
+        <div class="setup-card">
+            <label id="lblCountry">Страна регистрации</label>
+            <div class="country-grid" id="countryGrid">
+                <button class="country-btn" data-country="de">Германия</button>
+                <button class="country-btn" data-country="jp">Япония</button>
+                <button class="country-btn" data-country="pl">Польша</button>
+            </div>
+        </div>
+
+        <div class="setup-card">
+            <label id="lblVersion">Версия интерфейса</label>
+            <div class="version-grid" id="versionGrid">
+                <button class="version-btn" data-version="mobile">Телефон</button>
+                <button class="version-btn" data-version="pc">Компьютер</button>
+            </div>
+        </div>
+
+        <div class="setup-card">
+            <label id="lblTheme">Тема оформления</label>
+            <div class="theme-grid" id="themeGrid">
+                <button class="theme-btn active" data-theme="dark">Тёмная</button>
+                <button class="theme-btn" data-theme="light">Светлая</button>
+            </div>
+        </div>
+
+        <div class="setup-card">
+            <label>Сохранение</label>
+            <button class="load-btn" id="loadGameBtn">ЗАГРУЗИТЬ СОХРАНЕНИЕ</button>
+        </div>
+
+        <button class="start-btn" id="startGameBtn">НОВАЯ ИГРА</button>
+    </div>
+
+    <!-- ИГРА -->
+    <div id="gameScreen">
+        <div class="game-header">
+            <div class="company-info">
+                <span class="company-name" id="gameCompanyName">Pinkman Systems</span>
+                <span class="year-display" id="yearDisplay">1995</span>
+            </div>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-label" id="lblBudget">Бюджет</span>
+                    <span class="stat-value" id="moneyDisplay">$5000</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="lblPcCount">Собрано ПК</span>
+                    <span class="stat-value" id="pcCountDisplay">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="lblLevel">Уровень</span>
+                    <span class="stat-value" id="levelDisplay">1</span>
+                </div>
+            </div>
+            <div class="save-panel">
+                <button class="save-btn" id="saveGameBtn">💾 СОХРАНИТЬ</button>
+            </div>
+        </div>
+
+        <div class="game-content" id="gameContent">
+            <!-- Ожидаемые поставки -->
+            <div class="deliveries-panel" id="deliveriesPanel">
+                <div class="deliveries-title" id="lblDeliveries">Ожидаемые поставки:</div>
+                <div id="deliveriesList"></div>
+            </div>
+
+            <!-- Вкладки -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="cpu">CPU</button>
+                <button class="tab-btn" data-tab="gpu">GPU</button>
+                <button class="tab-btn" data-tab="ram">RAM</button>
+                <button class="tab-btn" data-tab="mb">Материнка</button>
+                <button class="tab-btn" data-tab="case">Корпуса</button>
+                <button class="tab-btn" data-tab="cool">Охлаждение</button>
+                <button class="tab-btn" data-tab="psu">БП</button>
+                <button class="tab-btn" data-tab="storage">Накопители</button>
+                <button class="tab-btn" data-tab="business">Бизнес</button>
+                <button class="tab-btn" data-tab="gamedev">Разработка игр</button>
+            </div>
+
+            <!-- Магазин -->
+            <div class="section-title" id="lblShop">Закупка</div>
+            <div class="components-grid" id="shopContainer"></div>
+            <div class="availability-note" id="availabilityNote">✧ Базовый набор: корпус, ОЗУ, БП, охлаждение, материнка, процессор — всё доступно с 1995 года. Остальное — для увеличения стоимости.</div>
+
+            <!-- Бизнес раздел -->
+            <div class="section-title" id="lblBusiness">Бизнес (пассивный доход)</div>
+            <div class="business-grid" id="businessContainer"></div>
+            <div class="business-stats" id="businessStats">
+                <div id="passiveIncomeDisplay">Пассивный доход: $0/сек</div>
+                <div id="businessCountDisplay">Магазинов: 0 | Клубов: 0 | Steam: 0</div>
+            </div>
+
+            <!-- Разработка игр -->
+            <div class="section-title" id="lblGameDev">Разработка игр</div>
+            <div class="game-dev-grid" id="gameDevContainer"></div>
+            <div class="business-stats" id="gameDevStats">
+                <div id="gameIncomeDisplay">Доход от игр: $0/сек</div>
+                <div id="gameCountDisplay">Игр в разработке: 0 | Выпущено: 0</div>
+            </div>
+
+            <!-- Сборка -->
+            <div class="section-title" id="lblAssembly">Сборка</div>
+            <div class="pc-case" id="pcSlotsContainer"></div>
+
+            <!-- Кнопка продажи -->
+            <button class="sell-btn" id="sellPcBtn">ПРОДАТЬ В СВОЙ МАГАЗИН</button>
+
+            <!-- Лог -->
+            <div class="log-panel" id="logPanel">→ Добро пожаловать. Текущий год: 1995. Базовая сборка доступна с первого дня.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ПЕРЕВОДЫ
+        const translations = {
+            ru: {
+                company: "Название компании",
+                ceo: "Имя директора",
+                country: "Страна регистрации",
+                version: "Версия интерфейса",
+                theme: "Тема оформления",
+                start: "НОВАЯ ИГРА",
+                budget: "Бюджет",
+                pcCount: "Собрано ПК",
+                level: "Уровень",
+                shop: "Закупка",
+                assembly: "Сборка",
+                business: "Бизнес",
+                gamedev: "Разработка игр",
+                sell: "ПРОДАТЬ В СВОЙ МАГАЗИН",
+                log: "Добро пожаловать. Текущий год:",
+                note: "✧ Базовый набор: корпус, ОЗУ, БП, охлаждение, материнка, процессор — всё доступно с 1995 года. Остальное — для увеличения стоимости.",
+                deliveries: "Ожидаемые поставки:",
+                noDeliveries: "Нет ожидаемых поставок",
+                delayed: "Задержка поставки",
+                minigame: {
+                    cpu: "Установка процессора",
+                    paste: "Нанесение термопасты",
+                    cable: "Подключение проводов",
+                    success: "✅ Успешно!",
+                    fail: "❌ Ошибка, попробуйте снова"
+                },
+                businessTypes: {
+                    shop: "Магазин электроники",
+                    club: "ПК-клуб",
+                    steam: "Игровая платформа"
+                },
+                gameGenres: {
+                    arcade: "Аркада",
+                    shooter: "Шутер",
+                    strategy: "Стратегия",
+                    rpg: "RPG"
+                }
+            },
+            de: {
+                company: "Firmenname",
+                ceo: "CEO Name",
+                country: "Land",
+                version: "Interface Version",
+                theme: "Design",
+                start: "NEUES SPIEL",
+                budget: "Budget",
+                pcCount: "PCs gebaut",
+                level: "Level",
+                shop: "Einkauf",
+                assembly: "Montage",
+                business: "Geschäft",
+                gamedev: "Spieleentwicklung",
+                sell: "VERKAUFEN",
+                log: "Willkommen. Aktuelles Jahr:",
+                note: "✧ Basis: Gehäuse, RAM, Netzteil, Kühler, Mainboard, CPU — ab 1995 verfügbar. Rest für Mehrwert.",
+                deliveries: "Lieferungen:",
+                noDeliveries: "Keine Lieferungen",
+                delayed: "Lieferung verzögert",
+                minigame: {
+                    cpu: "CPU Installation",
+                    paste: "Wärmeleitpaste",
+                    cable: "Kabelmanagement",
+                    success: "✅ Erfolg!",
+                    fail: "❌ Fehler, versuchen Sie es erneut"
+                },
+                businessTypes: {
+                    shop: "Elektronikladen",
+                    club: "PC-Club",
+                    steam: "Spieleplattform"
+                },
+                gameGenres: {
+                    arcade: "Arcade",
+                    shooter: "Shooter",
+                    strategy: "Strategie",
+                    rpg: "RPG"
+                }
+            },
+            jp: {
+                company: "会社名",
+                ceo: "CEO名",
+                country: "国",
+                version: "インターフェース",
+                theme: "テーマ",
+                start: "新規ゲーム",
+                budget: "予算",
+                pcCount: "組立数",
+                level: "レベル",
+                shop: "購入",
+                assembly: "組立",
+                business: "ビジネス",
+                gamedev: "ゲーム開発",
+                sell: "販売",
+                log: "ようこそ。現在の年:",
+                note: "✧ 基本: ケース、RAM、電源、クーラー、マザボ、CPU — 1995年から利用可能。他は付加価値用。",
+                deliveries: "配達予定:",
+                noDeliveries: "配達予定なし",
+                delayed: "配達遅延",
+                minigame: {
+                    cpu: "CPU取り付け",
+                    paste: "放熱グリス",
+                    cable: "ケーブル接続",
+                    success: "✅ 成功！",
+                    fail: "❌ エラー、再試行"
+                },
+                businessTypes: {
+                    shop: "家電量販店",
+                    club: "PCカフェ",
+                    steam: "ゲームプラットフォーム"
+                },
+                gameGenres: {
+                    arcade: "アーケード",
+                    shooter: "シューティング",
+                    strategy: "ストラテジー",
+                    rpg: "RPG"
+                }
+            },
+            pl: {
+                company: "Nazwa firmy",
+                ceo: "Imię CEO",
+                country: "Kraj",
+                version: "Wersja interfejsu",
+                theme: "Motyw",
+                start: "NOWA GRA",
+                budget: "Budżet",
+                pcCount: "Złożone PC",
+                level: "Poziom",
+                shop: "Zakup",
+                assembly: "Składanie",
+                business: "Biznes",
+                gamedev: "Tworzenie gier",
+                sell: "SPRZEDAJ",
+                log: "Witaj. Aktualny rok:",
+                note: "✧ Podstawa: obudowa, RAM, zasilacz, chłodzenie, płyta, CPU — dostępne od 1995. Reszta na wartość dodaną.",
+                deliveries: "Dostawy:",
+                noDeliveries: "Brak dostaw",
+                delayed: "Opóźnienie dostawy",
+                minigame: {
+                    cpu: "Montaż procesora",
+                    paste: "Pasta termoprzewodząca",
+                    cable: "Podłączenie kabli",
+                    success: "✅ Sukces!",
+                    fail: "❌ Błąd, spróbuj ponownie"
+                },
+                businessTypes: {
+                    shop: "Sklep elektroniczny",
+                    club: "Klub PC",
+                    steam: "Platforma gier"
+                },
+                gameGenres: {
+                    arcade: "Arkada",
+                    shooter: "Strzelanka",
+                    strategy: "Strategia",
+                    rpg: "RPG"
+                }
+            }
+        };
+
+        // СОСТОЯНИЕ
+        let money = 5000;
+        let builtPcCount = 0;
+        let currentYear = 1995;
+        let activeTab = 'cpu';
+        let currentLang = 'ru';
+        let companyName = "Pinkman Systems";
+        let ceoName = "Jessie Pinkman";
+        let selectedCountry = "de";
+        let interfaceVersion = "mobile";
+        let currentTheme = "dark";
+        
+        // Бизнес
+        let businesses = {
+            shop: { count: 0, baseIncome: 5, level: 1, upgradeCost: 1000 },
+            club: { count: 0, baseIncome: 10, level: 1, upgradeCost: 2000 },
+            steam: { count: 0, baseIncome: 20, level: 1, upgradeCost: 5000 }
+        };
+        
+        // Игры
+        let games = {
+            arcade: { progress: 0, completed: false, income: 15, devCost: 800, genre: 'arcade' },
+            shooter: { progress: 0, completed: false, income: 25, devCost: 1500, genre: 'shooter' },
+            strategy: { progress: 0, completed: false, income: 20, devCost: 1200, genre: 'strategy' },
+            rpg: { progress: 0, completed: false, income: 30, devCost: 2000, genre: 'rpg' }
+        };
+        
+        let passiveIncome = 0;
+        let gameIncome = 0;
+        let lastIncomeTime = Date.now();
+
+        // Очередь поставок
+        let deliveries = [];
+
+        // СЛОТЫ
+        const pcParts = {
+            case: null,
+            cpu: null,
+            gpu: null,
+            ram1: null,
+            ram2: null,
+            motherboard: null,
+            psu: null,
+            storage: null,
+            cooler: null,
+            fan1: null,
+            fan2: null,
+            fan3: null,
+            fan4: null
+        };
+
+        const pcModels = {
+            case: null,
+            cpu: null,
+            gpu: null,
+            ram1: null,
+            ram2: null,
+            motherboard: null,
+            psu: null,
+            storage: null,
+            cooler: null,
+            fan1: null,
+            fan2: null,
+            fan3: null,
+            fan4: null
+        };
+
+        // БАЗА КОМПЛЕКТУЮЩИХ
+        const partsDB = {
+            cpu: [
+                { year: 1995, brand: 'Intel', name: 'Pentium', model: 'P54C', socket: 'Socket 5', price: 250 },
+                { year: 1995, brand: 'AMD', name: 'Am5x86', model: '5x86', socket: 'Socket 5', price: 200 },
+                { year: 1997, brand: 'Intel', name: 'Pentium II', model: 'Klamath', socket: 'Slot 1', price: 350 },
+                { year: 1997, brand: 'AMD', name: 'K6', model: 'K6-233', socket: 'Socket 7', price: 280 },
+                { year: 2000, brand: 'Intel', name: 'Pentium 4', model: 'Willamette', socket: 'Socket 423', price: 450 },
+                { year: 2000, brand: 'AMD', name: 'Athlon', model: 'K7', socket: 'Slot A', price: 380 },
+                { year: 2006, brand: 'Intel', name: 'Core 2 Duo', model: 'Conroe', socket: 'LGA 775', price: 550 },
+                { year: 2006, brand: 'AMD', name: 'Athlon 64 X2', model: 'Windsor', socket: 'AM2', price: 500 },
+                { year: 2011, brand: 'Intel', name: 'Core i7-2600K', model: 'Sandy Bridge', socket: 'LGA 1155', price: 620 },
+                { year: 2011, brand: 'AMD', name: 'FX-8150', model: 'Bulldozer', socket: 'AM3+', price: 580 },
+                { year: 2017, brand: 'AMD', name: 'Ryzen 7 1800X', model: 'Summit Ridge', socket: 'AM4', price: 680 },
+                { year: 2017, brand: 'Intel', name: 'Core i7-8700K', model: 'Coffee Lake', socket: 'LGA 1151', price: 700 },
+                { year: 2023, brand: 'AMD', name: 'Ryzen 9 7950X3D', model: 'Raphael', socket: 'AM5', price: 900 },
+                { year: 2023, brand: 'Intel', name: 'Core i9-13900K', model: 'Raptor Lake', socket: 'LGA 1700', price: 950 }
+            ],
+            gpu: [
+                { year: 1995, brand: '3dfx', name: 'Voodoo', model: '3Dfx', price: 300 },
+                { year: 1997, brand: 'NVIDIA', name: 'Riva 128', model: 'NV3', price: 320 },
+                { year: 1997, brand: '3dfx', name: 'Voodoo2', model: 'SLI', price: 380 },
+                { year: 1999, brand: 'NVIDIA', name: 'GeForce 256', model: 'NV10', price: 400 },
+                { year: 2004, brand: 'NVIDIA', name: 'GeForce 6800 Ultra', model: 'NV40', price: 600 },
+                { year: 2004, brand: 'ATI', name: 'Radeon X800 XT', model: 'R420', price: 580 },
+                { year: 2006, brand: 'NVIDIA', name: 'GeForce 8800 GTX', model: 'G80', price: 650 },
+                { year: 2008, brand: 'NVIDIA', name: 'GTX 280', model: 'GT200', price: 700 },
+                { year: 2012, brand: 'NVIDIA', name: 'GTX 680', model: 'GK104', price: 800 },
+                { year: 2013, brand: 'AMD', name: 'R9 290X', model: 'Hawaii', price: 780 },
+                { year: 2016, brand: 'NVIDIA', name: 'GTX 1080 Ti', model: 'GP102', price: 850 },
+                { year: 2020, brand: 'NVIDIA', name: 'RTX 3080', model: 'GA102', price: 1000 },
+                { year: 2022, brand: 'NVIDIA', name: 'RTX 4090', model: 'AD102', price: 1200 }
+            ],
+            ram: [
+                { year: 1995, brand: 'Generic', name: 'EDO RAM', model: '16MB', type: 'EDO', price: 80 },
+                { year: 1995, brand: 'Generic', name: 'EDO RAM', model: '32MB', type: 'EDO', price: 120 },
+                { year: 1998, brand: 'Samsung', name: 'SDRAM', model: '64MB', type: 'SDRAM', price: 90 },
+                { year: 1998, brand: 'Samsung', name: 'SDRAM', model: '128MB', type: 'SDRAM', price: 150 },
+                { year: 2001, brand: 'Kingston', name: 'DDR', model: '256MB', type: 'DDR1', price: 100 },
+                { year: 2001, brand: 'Kingston', name: 'DDR', model: '512MB', type: 'DDR1', price: 180 },
+                { year: 2004, brand: 'Corsair', name: 'DDR2', model: '1GB', type: 'DDR2', price: 120 },
+                { year: 2004, brand: 'Corsair', name: 'DDR2', model: '2GB', type: 'DDR2', price: 200 },
+                { year: 2009, brand: 'Kingston', name: 'DDR3', model: '4GB', type: 'DDR3', price: 140 },
+                { year: 2009, brand: 'Kingston', name: 'DDR3', model: '8GB', type: 'DDR3', price: 240 },
+                { year: 2015, brand: 'Corsair', name: 'DDR4', model: '8GB', type: 'DDR4', price: 160 },
+                { year: 2015, brand: 'Corsair', name: 'DDR4', model: '16GB', type: 'DDR4', price: 280 },
+                { year: 2021, brand: 'G.Skill', name: 'DDR5', model: '16GB RGB', type: 'DDR5', price: 200 },
+                { year: 2021, brand: 'G.Skill', name: 'DDR5', model: '32GB RGB', type: 'DDR5', price: 350 }
+            ],
+            motherboard: [
+                { year: 1995, brand: 'ASUS', name: 'P/I-P55TP4', model: '430FX', socket: 'Socket 5', form: 'AT', price: 150 },
+                { year: 1995, brand: 'Gigabyte', name: 'GA-486', model: '486', socket: 'Socket 3', form: 'AT', price: 130 },
+                { year: 1997, brand: 'Abit', name: 'BH6', model: '440BX', socket: 'Slot 1', form: 'ATX', price: 180 },
+                { year: 1997, brand: 'ASUS', name: 'P2B', model: '440BX', socket: 'Slot 1', form: 'ATX', price: 190 },
+                { year: 2000, brand: 'ASUS', name: 'CUSL2', model: '815E', socket: 'Socket 370', form: 'ATX', price: 200 },
+                { year: 2000, brand: 'MSI', name: 'MS-6309', model: '815E', socket: 'Socket 370', form: 'ATX', price: 180 },
+                { year: 2003, brand: 'Gigabyte', name: 'GA-8IPE1000', model: '865PE', socket: 'Socket 478', form: 'ATX', price: 220 },
+                { year: 2003, brand: 'ASUS', name: 'P4P800', model: '865PE', socket: 'Socket 478', form: 'ATX', price: 240 },
+                { year: 2007, brand: 'MSI', name: 'P35 Neo', model: 'P35', socket: 'LGA 775', form: 'ATX', price: 230 },
+                { year: 2007, brand: 'Gigabyte', name: 'GA-P35-DS3R', model: 'P35', socket: 'LGA 775', form: 'ATX', price: 250 },
+                { year: 2009, brand: 'ASUS', name: 'P6T', model: 'X58', socket: 'LGA 1366', form: 'ATX', price: 280 },
+                { year: 2009, brand: 'Gigabyte', name: 'GA-EX58-UD5', model: 'X58', socket: 'LGA 1366', form: 'ATX', price: 300 },
+                { year: 2011, brand: 'Gigabyte', name: 'GA-Z68X', model: 'Z68', socket: 'LGA 1155', form: 'ATX', price: 260 },
+                { year: 2011, brand: 'ASUS', name: 'P8Z68-V', model: 'Z68', socket: 'LGA 1155', form: 'ATX', price: 280 },
+                { year: 2017, brand: 'ASUS', name: 'Crosshair VI', model: 'X370', socket: 'AM4', form: 'ATX', price: 310 },
+                { year: 2017, brand: 'MSI', name: 'X370 Carbon', model: 'X370', socket: 'AM4', form: 'ATX', price: 290 },
+                { year: 2023, brand: 'MSI', name: 'X670E Carbon', model: 'X670E', socket: 'AM5', form: 'ATX', price: 420 },
+                { year: 2023, brand: 'ASUS', name: 'ROG Crosshair X670E', model: 'X670E', socket: 'AM5', form: 'ATX', price: 480 }
+            ],
+            case: [
+                { year: 1995, brand: 'Generic', name: 'Beige Tower', model: 'Desktop', color: 'бежевый', price: 80 },
+                { year: 1995, brand: 'Generic', name: 'Mini Tower', model: 'Mini', color: 'бежевый', price: 70 },
+                { year: 1998, brand: 'Chieftec', name: 'DX-01', model: 'Server', color: 'бежевый', price: 100 },
+                { year: 1998, brand: 'Chieftec', name: 'DX-02', model: 'Server', color: 'черный', price: 110 },
+                { year: 2001, brand: 'Inwin', name: 'Black', model: 'Q500', color: 'черный', price: 90 },
+                { year: 2001, brand: 'Inwin', name: 'Silver', model: 'S500', color: 'серебристый', price: 95 },
+                { year: 2004, brand: 'Thermaltake', name: 'Tsunami', model: 'Dream', color: 'серебристый', price: 150 },
+                { year: 2004, brand: 'Thermaltake', name: 'Tsunami', model: 'Black', color: 'черный', price: 160 },
+                { year: 2008, brand: 'Cooler Master', name: 'CM690', model: 'RC-690', color: 'черный', price: 140 },
+                { year: 2008, brand: 'Cooler Master', name: 'CM690', model: 'RC-690 Silver', color: 'серебристый', price: 145 },
+                { year: 2012, brand: 'Corsair', name: 'Obsidian 650D', model: '650D', color: 'черный', price: 200 },
+                { year: 2012, brand: 'Corsair', name: 'Obsidian 550D', model: '550D', color: 'черный', price: 180 },
+                { year: 2017, brand: 'Corsair', name: 'Crystal 570X', model: '570X', color: 'белый', rgb: true, price: 220 },
+                { year: 2017, brand: 'Corsair', name: 'Crystal 460X', model: '460X', color: 'черный', rgb: true, price: 200 },
+                { year: 2019, brand: 'Lian Li', name: 'O11 Dynamic', model: 'O11', color: 'черный', price: 250 },
+                { year: 2019, brand: 'Lian Li', name: 'O11 Dynamic', model: 'O11 White', color: 'белый', price: 260 },
+                { year: 2022, brand: 'HYTE', name: 'Y60', model: 'Y60', color: 'черный', curved: true, price: 300 },
+                { year: 2022, brand: 'HYTE', name: 'Y60', model: 'Y60 White', color: 'белый', curved: true, price: 310 }
+            ],
+            cooler: [
+                { year: 1995, brand: 'Generic', name: 'Stock', model: '80mm', type: 'air', price: 20 },
+                { year: 1995, brand: 'Generic', name: 'Stock Plus', model: '90mm', type: 'air', price: 25 },
+                { year: 2000, brand: 'Cooler Master', name: 'DK8', model: '80mm', type: 'air', price: 25 },
+                { year: 2000, brand: 'Cooler Master', name: 'DK8-9A', model: '92mm', type: 'air', price: 30 },
+                { year: 2005, brand: 'Zalman', name: 'CNPS9500', model: '92mm', type: 'air', price: 50 },
+                { year: 2005, brand: 'Zalman', name: 'CNPS7700', model: '120mm', type: 'air', price: 55 },
+                { year: 2007, brand: 'Thermalright', name: 'Ultra-120', model: '120mm', type: 'air', price: 60 },
+                { year: 2007, brand: 'Thermalright', name: 'Ultra-120 Extreme', model: '120mm', type: 'air', price: 70 },
+                { year: 2009, brand: 'Noctua', name: 'NH-D14', model: 'D14', type: 'air', price: 80 },
+                { year: 2009, brand: 'Noctua', name: 'NH-U12P', model: 'U12P', type: 'air', price: 70 },
+                { year: 2011, brand: 'Corsair', name: 'H100', model: '240mm', type: 'aio', price: 100 },
+                { year: 2011, brand: 'Corsair', name: 'H80', model: '120mm', type: 'aio', price: 90 },
+                { year: 2014, brand: 'NZXT', name: 'Kraken X61', model: '280mm', type: 'aio', price: 120 },
+                { year: 2014, brand: 'NZXT', name: 'Kraken X41', model: '140mm', type: 'aio', price: 110 },
+                { year: 2019, brand: 'Noctua', name: 'NH-D15', model: 'D15', type: 'air', price: 95 },
+                { year: 2019, brand: 'Noctua', name: 'NH-U12S', model: 'U12S', type: 'air', price: 85 },
+                { year: 2020, brand: 'Corsair', name: 'H150i', model: '360mm', type: 'aio', price: 150 },
+                { year: 2020, brand: 'Corsair', name: 'H115i', model: '280mm', type: 'aio', price: 140 },
+                { year: 2023, brand: 'DeepCool', name: 'LT720', model: '360mm', type: 'aio', price: 150 },
+                { year: 2023, brand: 'DeepCool', name: 'LT520', model: '240mm', type: 'aio', price: 130 }
+            ],
+            psu: [
+                { year: 1995, brand: 'Generic', name: 'AT', model: '200W', watt: 200, price: 40 },
+                { year: 1995, brand: 'Generic', name: 'ATX', model: '250W', watt: 250, price: 50 },
+                { year: 1998, brand: 'Delta', name: 'ATX', model: '250W', watt: 250, price: 50 },
+                { year: 1998, brand: 'Delta', name: 'ATX', model: '300W', watt: 300, price: 60 },
+                { year: 2001, brand: 'Enermax', name: 'EG365P', model: '365W', watt: 365, price: 60 },
+                { year: 2001, brand: 'Enermax', name: 'EG465P', model: '465W', watt: 465, price: 70 },
+                { year: 2004, brand: 'Seasonic', name: 'S12', model: '430W', watt: 430, efficiency: '80+', price: 80 },
+                { year: 2004, brand: 'Seasonic', name: 'S12', model: '500W', watt: 500, efficiency: '80+', price: 90 },
+                { year: 2007, brand: 'Corsair', name: 'HX520', model: '520W', watt: 520, modular: true, price: 100 },
+                { year: 2007, brand: 'Corsair', name: 'HX620', model: '620W', watt: 620, modular: true, price: 120 },
+                { year: 2009, brand: 'Seasonic', name: 'X-750', model: '750W', watt: 750, modular: true, efficiency: 'Gold', price: 150 },
+                { year: 2009, brand: 'Seasonic', name: 'X-650', model: '650W', watt: 650, modular: true, efficiency: 'Gold', price: 140 },
+                { year: 2013, brand: 'EVGA', name: 'SuperNOVA 1000', model: 'G2', watt: 1000, modular: true, price: 200 },
+                { year: 2013, brand: 'EVGA', name: 'SuperNOVA 850', model: 'G2', watt: 850, modular: true, price: 180 },
+                { year: 2015, brand: 'Seasonic', name: 'Prime 850', model: '850W', watt: 850, modular: true, efficiency: 'Titanium', price: 250 },
+                { year: 2015, brand: 'Seasonic', name: 'Prime 650', model: '650W', watt: 650, modular: true, efficiency: 'Titanium', price: 220 },
+                { year: 2021, brand: 'Seasonic', name: 'Prime TX-1600', model: '1600W', watt: 1600, modular: true, efficiency: 'Titanium', price: 400 },
+                { year: 2021, brand: 'Seasonic', name: 'Prime TX-1000', model: '1000W', watt: 1000, modular: true, efficiency: 'Titanium', price: 300 },
+                { year: 2023, brand: 'Corsair', name: 'HX1500i', model: '1500W', watt: 1500, modular: true, efficiency: 'Platinum', price: 380 },
+                { year: 2023, brand: 'Corsair', name: 'HX1000i', model: '1000W', watt: 1000, modular: true, efficiency: 'Platinum', price: 320 }
+            ],
+            storage: [
+                { year: 1995, brand: 'Quantum', name: 'HDD', model: '500MB IDE', type: 'HDD', interface: 'IDE', size: '500MB', price: 120 },
+                { year: 1995, brand: 'Seagate', name: 'HDD', model: '1GB IDE', type: 'HDD', interface: 'IDE', size: '1GB', price: 150 },
+                { year: 1998, brand: 'Maxtor', name: 'HDD', model: '4GB IDE', type: 'HDD', interface: 'IDE', size: '4GB', price: 140 },
+                { year: 1998, brand: 'Maxtor', name: 'HDD', model: '8GB IDE', type: 'HDD', interface: 'IDE', size: '8GB', price: 180 },
+                { year: 2001, brand: 'Western Digital', name: 'Caviar', model: '20GB IDE', type: 'HDD', interface: 'IDE', size: '20GB', price: 150 },
+                { year: 2001, brand: 'Western Digital', name: 'Caviar', model: '40GB IDE', type: 'HDD', interface: 'IDE', size: '40GB', price: 200 },
+                { year: 2004, brand: 'Seagate', name: 'Barracuda', model: '160GB SATA', type: 'HDD', interface: 'SATA', size: '160GB', price: 130 },
+                { year: 2004, brand: 'Seagate', name: 'Barracuda', model: '250GB SATA', type: 'HDD', interface: 'SATA', size: '250GB', price: 160 },
+                { year: 2009, brand: 'Intel', name: 'X25-M', model: '80GB SSD', type: 'SSD', interface: 'SATA', size: '80GB', price: 300 },
+                { year: 2009, brand: 'Intel', name: 'X25-M', model: '160GB SSD', type: 'SSD', interface: 'SATA', size: '160GB', price: 450 },
+                { year: 2011, brand: 'Crucial', name: 'M4', model: '128GB SSD', type: 'SSD', interface: 'SATA', size: '128GB', price: 250 },
+                { year: 2011, brand: 'Crucial', name: 'M4', model: '256GB SSD', type: 'SSD', interface: 'SATA', size: '256GB', price: 400 },
+                { year: 2015, brand: 'Samsung', name: '950 Pro', model: '512GB NVMe', type: 'SSD', interface: 'NVMe', size: '512GB', price: 350 },
+                { year: 2015, brand: 'Samsung', name: '950 Pro', model: '1TB NVMe', type: 'SSD', interface: 'NVMe', size: '1TB', price: 550 },
+                { year: 2019, brand: 'WD', name: 'Black SN750', model: '1TB NVMe', type: 'SSD', interface: 'NVMe', size: '1TB', price: 380 },
+                { year: 2019, brand: 'WD', name: 'Black SN750', model: '2TB NVMe', type: 'SSD', interface: 'NVMe', size: '2TB', price: 600 },
+                { year: 2023, brand: 'WD', name: 'Black SN850X', model: '4TB NVMe', type: 'SSD', interface: 'NVMe', size: '4TB', price: 500 },
+                { year: 2023, brand: 'WD', name: 'Black SN850X', model: '8TB NVMe', type: 'SSD', interface: 'NVMe', size: '8TB', price: 800 }
+            ],
+            fan: [
+                { year: 1995, brand: 'Generic', name: '80mm', model: 'Fan', size: '80mm', price: 15 },
+                { year: 1995, brand: 'Generic', name: '92mm', model: 'Fan', size: '92mm', price: 18 },
+                { year: 2000, brand: 'Cooler Master', name: '80mm LED', model: '80mm', size: '80mm', led: true, price: 20 },
+                { year: 2000, brand: 'Cooler Master', name: '92mm LED', model: '92mm', size: '92mm', led: true, price: 22 },
+                { year: 2005, brand: 'Zalman', name: '92mm', model: '92mm', size: '92mm', price: 22 },
+                { year: 2005, brand: 'Zalman', name: '120mm', model: '120mm', size: '120mm', price: 25 },
+                { year: 2008, brand: 'Noctua', name: 'NF-P12', model: '120mm', size: '120mm', price: 25 },
+                { year: 2008, brand: 'Noctua', name: 'NF-S12B', model: '120mm', size: '120mm', price: 27 },
+                { year: 2012, brand: 'Corsair', name: 'AF120', model: '120mm', size: '120mm', price: 18 },
+                { year: 2012, brand: 'Corsair', name: 'AF140', model: '140mm', size: '140mm', price: 20 },
+                { year: 2015, brand: 'Corsair', name: 'ML120', model: '120mm', size: '120mm', price: 28 },
+                { year: 2015, brand: 'Corsair', name: 'ML140', model: '140mm', size: '140mm', price: 30 },
+                { year: 2018, brand: 'NZXT', name: 'Aer RGB', model: '120mm', size: '120mm', rgb: true, price: 32 },
+                { year: 2018, brand: 'NZXT', name: 'Aer RGB', model: '140mm', size: '140mm', rgb: true, price: 35 },
+                { year: 2020, brand: 'Lian Li', name: 'UNI FAN SL120', model: '120mm', size: '120mm', rgb: true, price: 35 },
+                { year: 2020, brand: 'Lian Li', name: 'UNI FAN SL140', model: '140mm', size: '140mm', rgb: true, price: 38 },
+                { year: 2022, brand: 'Corsair', name: 'QL120', model: '120mm', size: '120mm', rgb: true, price: 38 },
+                { year: 2022, brand: 'Corsair', name: 'QL140', model: '140mm', size: '140mm', rgb: true, price: 42 },
+                { year: 2025, brand: 'Lian Li', name: 'UNI FAN TL LCD', model: '140mm', size: '140mm', rgb: true, lcd: true, price: 45 },
+                { year: 2025, brand: 'Lian Li', name: 'UNI FAN TL LCD', model: '120mm', size: '120mm', rgb: true, lcd: true, price: 42 }
+            ]
+        };
+
+        // DOM
+        const moneySpan = document.getElementById('moneyDisplay');
+        const pcCountSpan = document.getElementById('pcCountDisplay');
+        const yearSpan = document.getElementById('yearDisplay');
+        const levelSpan = document.getElementById('levelDisplay');
+        const gameCompanySpan = document.getElementById('gameCompanyName');
+        const shopDiv = document.getElementById('shopContainer');
+        const pcSlotsDiv = document.getElementById('pcSlotsContainer');
+        const sellBtn = document.getElementById('sellPcBtn');
+        const logPanel = document.getElementById('logPanel');
+        const gameContent = document.getElementById('gameContent');
+        const availabilityNote = document.getElementById('availabilityNote');
+        const deliveriesPanel = document.getElementById('deliveriesPanel');
+        const deliveriesList = document.getElementById('deliveriesList');
+        const businessContainer = document.getElementById('businessContainer');
+        const gameDevContainer = document.getElementById('gameDevContainer');
+        const passiveIncomeDisplay = document.getElementById('passiveIncomeDisplay');
+        const businessCountDisplay = document.getElementById('businessCountDisplay');
+        const gameIncomeDisplay = document.getElementById('gameIncomeDisplay');
+        const gameCountDisplay = document.getElementById('gameCountDisplay');
+        const body = document.body;
+
+        // Функции
+        function addLog(msg) {
+            logPanel.innerHTML = '→ ' + msg;
+        }
+
+        function refreshStats() {
+            moneySpan.innerText = '$' + money;
+            pcCountSpan.innerText = builtPcCount;
+            yearSpan.innerText = currentYear;
+            levelSpan.innerText = Math.floor((currentYear - 1990) / 5);
+        }
+
+        // Сохранение
+        function saveGame() {
+            const saveData = {
+                money, builtPcCount, currentYear, companyName, ceoName, selectedCountry,
+                businesses, games, deliveries, pcParts, pcModels,
+                version: 1
+            };
+            localStorage.setItem('pcBuildingTycoonSave', JSON.stringify(saveData));
+            addLog('💾 Игра сохранена');
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('pcBuildingTycoonSave');
+            if (!saved) {
+                addLog('❌ Нет сохранения');
+                return false;
+            }
+            try {
+                const data = JSON.parse(saved);
+                money = data.money || 5000;
+                builtPcCount = data.builtPcCount || 0;
+                currentYear = data.currentYear || 1995;
+                companyName = data.companyName || "Pinkman Systems";
+                ceoName = data.ceoName || "Jessie Pinkman";
+                selectedCountry = data.selectedCountry || "de";
+                businesses = data.businesses || { shop: { count: 0, baseIncome: 5, level: 1, upgradeCost: 1000 }, club: { count: 0, baseIncome: 10, level: 1, upgradeCost: 2000 }, steam: { count: 0, baseIncome: 20, level: 1, upgradeCost: 5000 } };
+                games = data.games || { arcade: { progress: 0, completed: false, income: 15, devCost: 800, genre: 'arcade' }, shooter: { progress: 0, completed: false, income: 25, devCost: 1500, genre: 'shooter' }, strategy: { progress: 0, completed: false, income: 20, devCost: 1200, genre: 'strategy' }, rpg: { progress: 0, completed: false, income: 30, devCost: 2000, genre: 'rpg' } };
+                deliveries = data.deliveries || [];
+                
+                if (data.pcParts) {
+                    Object.assign(pcParts, data.pcParts);
+                }
+                if (data.pcModels) {
+                    Object.assign(pcModels, data.pcModels);
+                }
+                
+                gameCompanySpan.innerText = companyName;
+                refreshStats();
+                renderShop();
+                renderPcSlots();
+                renderBusiness();
+                renderGameDev();
+                updatePassiveIncome();
+                addLog('✅ Загрузка выполнена');
+                return true;
+            } catch (e) {
+                addLog('❌ Ошибка загрузки');
+                return false;
+            }
+        }
+
+        // Получить доступные комплектующие - строго по году, максимум 2 модели
+        function getAvailableParts(type) {
+            if (!partsDB[type]) return [];
+            
+            const allParts = partsDB[type];
+            const yearFiltered = allParts.filter(p => p.year <= currentYear);
+            
+            const byYear = {};
+            yearFiltered.forEach(p => {
+                if (!byYear[p.year]) byYear[p.year] = [];
+                byYear[p.year].push(p);
+            });
+            
+            const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+            const result = [];
+            let yearsAdded = 0;
+            
+            for (let year of years) {
+                if (yearsAdded >= 2) break;
+                
+                const partsThisYear = byYear[year];
+                const toAdd = partsThisYear.slice(0, 2);
+                result.push(...toAdd);
+                yearsAdded++;
+            }
+            
+            if (result.length === 0 && years.length > 0) {
+                const lastYear = years[years.length - 1];
+                result.push(...byYear[lastYear].slice(0, 2));
+            }
+            
+            return result;
+        }
+
+        // Пассивный доход
+        function updatePassiveIncome() {
+            passiveIncome = 
+                businesses.shop.count * businesses.shop.baseIncome * businesses.shop.level +
+                businesses.club.count * businesses.club.baseIncome * businesses.club.level +
+                businesses.steam.count * businesses.steam.baseIncome * businesses.steam.level;
+            
+            gameIncome = 0;
+            let gamesCompleted = 0;
+            let gamesInDev = 0;
+            
+            for (let g in games) {
+                if (games[g].completed) {
+                    gameIncome += games[g].income;
+                    gamesCompleted++;
+                } else if (games[g].progress > 0) {
+                    gamesInDev++;
+                }
+            }
+            
+            passiveIncomeDisplay.innerText = `Пассивный доход: $${passiveIncome}/сек`;
+            businessCountDisplay.innerText = `Магазинов: ${businesses.shop.count} | Клубов: ${businesses.club.count} | Steam: ${businesses.steam.count}`;
+            gameIncomeDisplay.innerText = `Доход от игр: $${gameIncome}/сек`;
+            gameCountDisplay.innerText = `Игр в разработке: ${gamesInDev} | Выпущено: ${gamesCompleted}`;
+        }
+
+        function applyPassiveIncome() {
+            const now = Date.now();
+            const secondsPassed = Math.floor((now - lastIncomeTime) / 1000);
+            if (secondsPassed > 0) {
+                money += (passiveIncome + gameIncome) * secondsPassed;
+                lastIncomeTime = now;
+                refreshStats();
+            }
+        }
+
+        // Покупка бизнеса
+        function buyBusiness(type) {
+            const business = businesses[type];
+            const cost = business.upgradeCost;
+            
+            if (money < cost) {
+                addLog('Недостаточно средств');
+                return;
+            }
+            
+            money -= cost;
+            business.count++;
+            business.upgradeCost = Math.floor(business.upgradeCost * 1.5);
+            
+            updatePassiveIncome();
+            renderBusiness();
+            refreshStats();
+            addLog(`Куплен ${translations[currentLang].businessTypes[type]}`);
+        }
+
+        function renderBusiness() {
+            const t = translations[currentLang].businessTypes;
+            let html = '';
+            
+            const types = [
+                { key: 'shop', name: t.shop, income: businesses.shop.baseIncome * businesses.shop.level, cost: businesses.shop.upgradeCost },
+                { key: 'club', name: t.club, income: businesses.club.baseIncome * businesses.club.level, cost: businesses.club.upgradeCost },
+                { key: 'steam', name: t.steam, income: businesses.steam.baseIncome * businesses.steam.level, cost: businesses.steam.upgradeCost }
+            ];
+            
+            types.forEach(b => {
+                html += `
+                    <div class="business-card" data-type="${b.key}">
+                        <div class="title">${b.name}</div>
+                        <div class="income">$${b.income}/сек</div>
+                        <div class="upgrade">Купить за $${b.cost}</div>
+                    </div>
+                `;
+            });
+            
+            businessContainer.innerHTML = html;
+            
+            document.querySelectorAll('.business-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    buyBusiness(card.dataset.type);
+                });
+            });
+        }
+
+        function developGame(genre) {
+            const game = games[genre];
+            if (game.completed) {
+                addLog('Игра уже выпущена');
+                return;
+            }
+            
+            const cost = game.devCost;
+            if (money < cost) {
+                addLog('Недостаточно средств');
+                return;
+            }
+            
+            money -= cost;
+            game.progress = 0.01; // начинаем разработку
+            
+            addLog(`Начата разработка ${translations[currentLang].gameGenres[genre]}`);
+            refreshStats();
+            renderGameDev();
+        }
+
+        function updateGameProgress() {
+            for (let g in games) {
+                if (games[g].progress > 0 && !games[g].completed) {
+                    games[g].progress += 0.01; // 1% за тик
+                    if (games[g].progress >= 1) {
+                        games[g].completed = true;
+                        games[g].progress = 1;
+                        addLog(`✅ Игра ${translations[currentLang].gameGenres[g]} выпущена! Доход: $${games[g].income}/сек`);
+                    }
+                }
+            }
+            renderGameDev();
+            updatePassiveIncome();
+        }
+
+        function renderGameDev() {
+            const t = translations[currentLang].gameGenres;
+            let html = '';
+            
+            const genres = [
+                { key: 'arcade', name: t.arcade, progress: games.arcade.progress, completed: games.arcade.completed, income: games.arcade.income, cost: games.arcade.devCost },
+                { key: 'shooter', name: t.shooter, progress: games.shooter.progress, completed: games.shooter.completed, income: games.shooter.income, cost: games.shooter.devCost },
+                { key: 'strategy', name: t.strategy, progress: games.strategy.progress, completed: games.strategy.completed, income: games.strategy.income, cost: games.strategy.devCost },
+                { key: 'rpg', name: t.rpg, progress: games.rpg.progress, completed: games.rpg.completed, income: games.rpg.income, cost: games.rpg.devCost }
+            ];
+            
+            genres.forEach(g => {
+                let status = '';
+                if (g.completed) {
+                    status = `<div class="income">✅ Доход: $${g.income}/сек</div>`;
+                } else if (g.progress > 0) {
+                    status = `<div class="progress">🔄 ${Math.floor(g.progress * 100)}%</div>`;
+                } else {
+                    status = `<div class="develop" data-genre="${g.key}">🚀 Разработать за $${g.cost}</div>`;
+                }
+                
+                html += `
+                    <div class="game-dev-card" data-genre="${g.key}">
+                        <div class="genre">${g.name}</div>
+                        ${status}
+                    </div>
+                `;
+            });
+            
+            gameDevContainer.innerHTML = html;
+            
+            document.querySelectorAll('.develop').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    developGame(btn.parentElement.dataset.genre);
+                });
+            });
+        }
+
+        // Проверка задержек
+        function updateDeliveries() {
+            const now = Date.now();
+            deliveries = deliveries.filter(d => d.time > now);
+            
+            let html = '';
+            if (deliveries.length === 0) {
+                html = `<div class="delivery-item">${translations[currentLang].noDeliveries}</div>`;
+            } else {
+                deliveries.forEach(d => {
+                    const seconds = Math.floor((d.time - now) / 1000);
+                    html += `<div class="delivery-item">${d.name} — ${seconds} сек.</div>`;
+                });
+            }
+            deliveriesList.innerHTML = html;
+            
+            renderShop();
+        }
+
+        // Мини-игры
+        function showMinigame(type, callback) {
+            const overlay = document.createElement('div');
+            overlay.className = 'minigame-overlay';
+            
+            const t = translations[currentLang].minigame;
+            
+            if (type === 'cpu') {
+                overlay.innerHTML = `
+                    <div class="minigame-container">
+                        <div class="minigame-title">${t.cpu}</div>
+                        <div class="minigame-area">
+                            <div class="socket-game" id="cpuGame">
+                                <div class="cpu-chip" id="cpuChip">CPU</div>
+                                <div class="socket-target">Socket</div>
+                            </div>
+                        </div>
+                        <div class="minigame-status" id="gameStatus">Переместите процессор в сокет</div>
+                        <button class="minigame-btn" id="completeBtn" disabled>ЗАВЕРШИТЬ</button>
+                    </div>
+                `;
+            } else if (type === 'paste') {
+                overlay.innerHTML = `
+                    <div class="minigame-container">
+                        <div class="minigame-title">${t.paste}</div>
+                        <div class="minigame-area">
+                            <div class="paste-game" id="pasteGame">
+                                ${Array(100).fill('<div class="paste-cell"></div>').join('')}
+                            </div>
+                        </div>
+                        <div class="minigame-status" id="gameStatus">Нажмите на ячейки (минимум 20)</div>
+                        <button class="minigame-btn" id="completeBtn">ЗАВЕРШИТЬ</button>
+                    </div>
+                `;
+            } else if (type === 'cable') {
+                overlay.innerHTML = `
+                    <div class="minigame-container">
+                        <div class="minigame-title">${t.cable}</div>
+                        <div class="minigame-area">
+                            <div class="cable-game" id="cableGame">
+                                ${Array(25).fill('<div class="cable-cell"></div>').join('')}
+                            </div>
+                        </div>
+                        <div class="minigame-status" id="gameStatus">Создайте путь от A до B</div>
+                        <button class="minigame-btn" id="completeBtn">ЗАВЕРШИТЬ</button>
+                    </div>
+                `;
+            }
+            
+            document.body.appendChild(overlay);
+            
+            if (type === 'cpu') {
+                const chip = document.getElementById('cpuChip');
+                const target = document.querySelector('.socket-target');
+                const completeBtn = document.getElementById('completeBtn');
+                const status = document.getElementById('gameStatus');
+                
+                let dragging = false;
+                let chipX = 20, chipY = 20;
+                
+                chip.addEventListener('mousedown', (e) => {
+                    dragging = true;
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    if (!dragging) return;
+                    const game = document.getElementById('cpuGame');
+                    const rect = game.getBoundingClientRect();
+                    chipX = e.clientX - rect.left - 30;
+                    chipY = e.clientY - rect.top - 30;
+                    chipX = Math.max(0, Math.min(140, chipX));
+                    chipY = Math.max(0, Math.min(140, chipY));
+                    chip.style.left = chipX + 'px';
+                    chip.style.top = chipY + 'px';
+                    
+                    const targetRect = target.getBoundingClientRect();
+                    const chipRect = chip.getBoundingClientRect();
+                    const dist = Math.hypot(
+                        (chipRect.left + 30) - (targetRect.left + 35),
+                        (chipRect.top + 30) - (targetRect.top + 35)
+                    );
+                    
+                    if (dist < 30) {
+                        completeBtn.disabled = false;
+                        status.innerText = '✓ Можно устанавливать';
+                    } else {
+                        completeBtn.disabled = true;
+                        status.innerText = 'Переместите процессор в сокет';
+                    }
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    dragging = false;
+                });
+                
+                completeBtn.addEventListener('click', () => {
+                    document.body.removeChild(overlay);
+                    callback(true);
+                });
+            }
+            
+            if (type === 'paste') {
+                const cells = document.querySelectorAll('.paste-cell');
+                const completeBtn = document.getElementById('completeBtn');
+                const status = document.getElementById('gameStatus');
+                let filled = 0;
+                
+                cells.forEach(cell => {
+                    cell.addEventListener('click', () => {
+                        if (!cell.classList.contains('filled')) {
+                            cell.classList.add('filled');
+                            filled++;
+                            status.innerText = `Нажато: ${filled}/20`;
+                            if (filled >= 20) {
+                                completeBtn.disabled = false;
+                            }
+                        }
+                    });
+                });
+                
+                completeBtn.addEventListener('click', () => {
+                    document.body.removeChild(overlay);
+                    callback(true);
+                });
+            }
+            
+            if (type === 'cable') {
+                const cells = document.querySelectorAll('.cable-cell');
+                const completeBtn = document.getElementById('completeBtn');
+                const status = document.getElementById('gameStatus');
+                let path = [];
+                
+                cells.forEach((cell, index) => {
+                    cell.addEventListener('click', () => {
+                        if (cell.classList.contains('path')) {
+                            cell.classList.remove('path');
+                            path = path.filter(i => i !== index);
+                        } else {
+                            cell.classList.add('path');
+                            path.push(index);
+                        }
+                        
+                        const hasPath = path.includes(0) && path.includes(24);
+                        if (hasPath) {
+                            completeBtn.disabled = false;
+                            status.innerText = '✓ Путь найден';
+                        } else {
+                            completeBtn.disabled = true;
+                            status.innerText = 'Создайте путь от A до B';
+                        }
+                    });
+                });
+                
+                completeBtn.addEventListener('click', () => {
+                    document.body.removeChild(overlay);
+                    callback(true);
+                });
+            }
+        }
+
+        // Покупка с задержками
+        function buyPart(item) {
+            if (money < item.price) { 
+                addLog('Недостаточно средств'); 
+                return; 
+            }
+            
+            if (Math.random() < 0.3) {
+                const delayTime = Date.now() + 30000;
+                deliveries.push({
+                    name: `${item.brand} ${item.model}`,
+                    time: delayTime,
+                    item: item
+                });
+                addLog(`⏳ Задержка поставки: ${item.brand} ${item.model} (30 сек)`);
+                updateDeliveries();
+                return;
+            }
+            
+            addToInventory(item);
+        }
+        
+        function addToInventory(item) {
+            const type = item.type;
+            const cat = item.cat;
+            const brand = item.brand;
+            const model = item.model;
+            
+            if (cat === 'fan') {
+                if (!pcParts.fan1) {
+                    pcParts.fan1 = 'fan';
+                    pcModels.fan1 = `${brand} ${model}`;
+                } else if (!pcParts.fan2) {
+                    pcParts.fan2 = 'fan';
+                    pcModels.fan2 = `${brand} ${model}`;
+                } else if (!pcParts.fan3) {
+                    pcParts.fan3 = 'fan';
+                    pcModels.fan3 = `${brand} ${model}`;
+                } else if (!pcParts.fan4) {
+                    pcParts.fan4 = 'fan';
+                    pcModels.fan4 = `${brand} ${model}`;
+                } else {
+                    addLog('Все слоты для вентиляторов заняты');
+                    return;
+                }
+            } else if (cat === 'ram') {
+                if (!pcParts.ram1) {
+                    pcParts.ram1 = 'ram';
+                    pcModels.ram1 = `${brand} ${model}`;
+                } else if (!pcParts.ram2) {
+                    pcParts.ram2 = 'ram';
+                    pcModels.ram2 = `${brand} ${model}`;
+                } else {
+                    addLog('Все слоты оперативной памяти заняты');
+                    return;
+                }
+            } else {
+                if (pcParts[type]) {
+                    addLog(`Слот ${type} уже занят`);
+                    return;
+                }
+                pcParts[type] = type;
+                pcModels[type] = `${brand} ${model}`;
+            }
+            
+            money -= item.price;
+            addLog(`Приобретено: ${brand} ${model} за $${item.price}`);
+            
+            // Мини-игры для сложных компонентов
+            if (type === 'cpu' || type === 'gpu' || type === 'cooler') {
+                showMinigame('cpu', (success) => {
+                    if (!success) {
+                        money += item.price;
+                        pcParts[type] = null;
+                        pcModels[type] = null;
+                        addLog('❌ Установка не удалась, деньги возвращены');
+                    }
+                    refreshStats();
+                    renderPcSlots();
+                });
+            } else if (type === 'ram') {
+                showMinigame('paste', (success) => {});
+            } else if (type === 'motherboard') {
+                showMinigame('cable', (success) => {});
+            }
+            
+            refreshStats();
+            renderPcSlots();
+        }
+
+        function renderShop() {
+            let items = [];
+            if (activeTab === 'cool') {
+                items = [
+                    ...getAvailableParts('cooler').map(p => ({...p, type: 'cooler', cat: 'cooler'})),
+                    ...getAvailableParts('fan').map(f => ({...f, type: 'fan', cat: 'fan'}))
+                ];
+            } else if (activeTab === 'fan') {
+                items = getAvailableParts('fan').map(f => ({...f, type: 'fan', cat: 'fan'}));
+            } else if (activeTab === 'business') {
+                renderBusiness();
+                shopDiv.innerHTML = '<div style="text-align:center; padding:40px;">Переключитесь на другую вкладку для закупки</div>';
+                return;
+            } else if (activeTab === 'gamedev') {
+                renderGameDev();
+                shopDiv.innerHTML = '<div style="text-align:center; padding:40px;">Переключитесь на другую вкладку для закупки</div>';
+                return;
+            } else {
+                items = getAvailableParts(activeTab).map(p => ({...p, type: activeTab, cat: activeTab}));
+            }
+
+            if (items.length === 0) {
+                shopDiv.innerHTML = '<div style="color: #6ba86b; text-align: center; padding: 20px;">Нет доступных компонентов для этого года</div>';
+                return;
+            }
+
+            let html = '';
+            items.forEach(item => {
+                const isDelayed = deliveries.some(d => d.item && d.item.model === item.model);
+                html += `
+                    <div class="comp-card ${isDelayed ? 'delayed' : ''}" data-item='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
+                        <div class="comp-name">${item.brand} ${item.name}</div>
+                        <div class="comp-brand">${item.model || ''}</div>
+                        <div class="comp-model">${item.socket || item.size || item.watt || item.color || ''}</div>
+                        <div class="comp-price">$${item.price}</div>
+                        <div class="comp-year">${item.year} г.</div>
+                    </div>
+                `;
+            });
+            shopDiv.innerHTML = html;
+
+            document.querySelectorAll('.comp-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    if (card.classList.contains('delayed')) {
+                        addLog('Товар уже в поставке');
+                        return;
+                    }
+                    try {
+                        const item = JSON.parse(card.dataset.item.replace(/&apos;/g, "'"));
+                        buyPart(item);
+                    } catch (e) {
+                        console.error('Error parsing item', e);
+                    }
+                });
+            });
+        }
+
+        function renderPcSlots() {
+            const slots = [
+                { key: 'case', label: 'Корпус' },
+                { key: 'cpu', label: 'Процессор' },
+                { key: 'gpu', label: 'Видеокарта' },
+                { key: 'motherboard', label: 'Материнская плата' },
+                { key: 'ram1', label: 'RAM 1' },
+                { key: 'ram2', label: 'RAM 2' },
+                { key: 'storage', label: 'Накопитель' },
+                { key: 'psu', label: 'Блок питания' },
+                { key: 'cooler', label: 'Кулер' },
+                { key: 'fan1', label: 'Вентилятор 1' },
+                { key: 'fan2', label: 'Вентилятор 2' },
+                { key: 'fan3', label: 'Вентилятор 3' },
+                { key: 'fan4', label: 'Вентилятор 4' }
+            ];
+
+            let html = '';
+            slots.forEach(slot => {
+                const model = pcModels[slot.key];
+                html += `
+                    <div class="pc-slot">
+                        <div class="slot-label">${slot.label}</div>
+                        <div class="slot-content ${model ? '' : 'empty'}">${model || '— пусто —'}</div>
+                        ${model ? `<button class="remove-btn" data-slot="${slot.key}">✕</button>` : ''}
+                    </div>
+                `;
+            });
+            pcSlotsDiv.innerHTML = html;
+
+            document.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const slot = btn.dataset.slot;
+                    pcParts[slot] = null;
+                    pcModels[slot] = null;
+                    renderPcSlots();
+                    addLog(`Компонент из слота ${slot} удалён`);
+                });
+            });
+        }
+
+        function sellPc() {
+            const filledSlots = Object.values(pcParts).filter(v => v !== null).length;
+            
+            if (filledSlots === 0) {
+                addLog('Нечего продавать');
+                return;
+            }
+
+            // Базовая стоимость
+            let total = 0;
+            for (let key in pcParts) {
+                if (pcParts[key]) total += 80 + Math.floor(Math.random() * 100);
+            }
+            
+            // Бонус за базовую сборку
+            if (pcParts.case && pcParts.cpu && pcParts.motherboard && pcParts.psu && pcParts.cooler && pcParts.ram1) {
+                total += 200;
+                addLog('✅ Базовая сборка + бонус');
+            }
+            
+            // Доп бонусы за улучшения
+            if (pcParts.gpu) total += 300;
+            if (pcParts.ram2) total += 100;
+            if (pcParts.storage) total += 150;
+            if (pcParts.fan1) total += 50;
+            if (pcParts.fan2) total += 50;
+            if (pcParts.fan3) total += 50;
+            if (pcParts.fan4) total += 50;
+
+            money += total;
+            builtPcCount++;
+
+            for (let k in pcParts) pcParts[k] = null;
+            for (let k in pcModels) pcModels[k] = null;
+
+            if (builtPcCount % 3 === 0) {
+                currentYear = Math.min(currentYear + 5, 2025);
+                addLog(`Наступил ${currentYear} год. Доступны новые компоненты.`);
+            }
+
+            refreshStats();
+            renderPcSlots();
+            renderShop();
+            addLog(`Компьютер продан в свой магазин за $${total}`);
+        }
+
+        // Обработчики вкладок
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeTab = btn.dataset.tab;
+                renderShop();
+            });
+        });
+
+        // Язык
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentLang = btn.dataset.lang;
+                updateUILanguage();
+                renderShop();
+                renderBusiness();
+                renderGameDev();
+            });
+        });
+
+        function updateUILanguage() {
+            const t = translations[currentLang] || translations.ru;
+            
+            document.getElementById('lblCompany').innerText = t.company;
+            document.getElementById('lblCeo').innerText = t.ceo;
+            document.getElementById('lblCountry').innerText = t.country;
+            document.getElementById('lblVersion').innerText = t.version;
+            document.getElementById('lblTheme').innerText = t.theme;
+            document.getElementById('startGameBtn').innerText = t.start;
+            
+            document.querySelectorAll('.stat-label')[0].innerText = t.budget;
+            document.querySelectorAll('.stat-label')[1].innerText = t.pcCount;
+            document.querySelectorAll('.stat-label')[2].innerText = t.level;
+            
+            document.getElementById('lblShop').innerText = t.shop;
+            document.getElementById('lblAssembly').innerText = t.assembly;
+            document.getElementById('lblBusiness').innerText = t.business;
+            document.getElementById('lblGameDev').innerText = t.gamedev;
+            document.getElementById('sellPcBtn').innerText = t.sell;
+            document.getElementById('lblDeliveries').innerText = t.deliveries;
+            availabilityNote.innerText = t.note;
+            
+            if (gameScreen.style.display === 'block') {
+                addLog(`${t.log} ${currentYear}`);
+            }
+            
+            updateDeliveries();
+            renderBusiness();
+            renderGameDev();
+        }
+
+        // Версия интерфейса
+        document.querySelectorAll('.version-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.version-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                interfaceVersion = btn.dataset.version;
+                
+                // Применяем класс pc-mode если выбрана компьютерная версия
+                if (interfaceVersion === 'pc') {
+                    gameContent.classList.add('pc-mode');
+                } else {
+                    gameContent.classList.remove('pc-mode');
+                }
+            });
+        });
+
+        // Тема
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTheme = btn.dataset.theme;
+                body.className = `theme-${currentTheme}`;
+            });
+        });
+
+        // Страна
+        document.querySelectorAll('.country-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.country-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedCountry = btn.dataset.country;
+            });
+        });
+
+        // Сохранение и загрузка
+        document.getElementById('saveGameBtn').addEventListener('click', saveGame);
+        document.getElementById('loadGameBtn').addEventListener('click', () => {
+            if (loadGame()) {
+                document.getElementById('setupScreen').style.display = 'none';
+                document.getElementById('gameScreen').style.display = 'block';
+                updateUILanguage();
+            }
+        });
+
+        // Старт
+        document.getElementById('startGameBtn').addEventListener('click', () => {
+            companyName = document.getElementById('companyNameInput').value;
+            ceoName = document.getElementById('ceoNameInput').value;
+            gameCompanySpan.innerText = companyName;
+            
+            // Активируем кнопки по умолчанию
+            document.querySelector('.lang-btn[data-lang="ru"]').classList.add('active');
+            document.querySelector('.country-btn[data-country="de"]').classList.add('active');
+            document.querySelector('.version-btn[data-version="mobile"]').classList.add('active');
+            document.querySelector('.theme-btn[data-theme="dark"]').classList.add('active');
+            
+            // Применяем версию интерфейса
+            if (interfaceVersion === 'pc') {
+                gameContent.classList.add('pc-mode');
+            } else {
+                gameContent.classList.remove('pc-mode');
+            }
+            
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            
+            // Сброс игры
+            money = 5000;
+            builtPcCount = 0;
+            currentYear = 1995;
+            deliveries = [];
+            businesses = {
+                shop: { count: 0, baseIncome: 5, level: 1, upgradeCost: 1000 },
+                club: { count: 0, baseIncome: 10, level: 1, upgradeCost: 2000 },
+                steam: { count: 0, baseIncome: 20, level: 1, upgradeCost: 5000 }
+            };
+            games = {
+                arcade: { progress: 0, completed: false, income: 15, devCost: 800, genre: 'arcade' },
+                shooter: { progress: 0, completed: false, income: 25, devCost: 1500, genre: 'shooter' },
+                strategy: { progress: 0, completed: false, income: 20, devCost: 1200, genre: 'strategy' },
+                rpg: { progress: 0, completed: false, income: 30, devCost: 2000, genre: 'rpg' }
+            };
+            passiveIncome = 0;
+            gameIncome = 0;
+            lastIncomeTime = Date.now();
+            
+            for (let k in pcParts) pcParts[k] = null;
+            for (let k in pcModels) pcModels[k] = null;
+            
+            refreshStats();
+            renderShop();
+            renderPcSlots();
+            renderBusiness();
+            renderGameDev();
+            updatePassiveIncome();
+            updateUILanguage();
+            
+            // Интервалы обновления
+            setInterval(() => {
+                applyPassiveIncome();
+                updateDeliveries();
+                updateGameProgress();
+            }, 1000);
+        });
+
+        sellBtn.addEventListener('click', sellPc);
+
+        // Начальная отрисовка
+        renderShop();
+        renderPcSlots();
+        renderBusiness();
+        renderGameDev();
+        updatePassiveIncome();
+        updateUILanguage();
+    })();
+</script>
+</body>
+</html>
