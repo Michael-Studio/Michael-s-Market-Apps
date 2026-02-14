@@ -30,12 +30,12 @@
         "id": "PC Building Simulator",
         "icon": "green",
         "iconClass": "",
-        "iconUrl": "https://iimg.su/s/14/gNtQnfVxVFDJJOUEVQLSCEzhEvEzfsO1DJWL8QLg.png",
+        "iconUrl": "https://iimg.su/s/14/gqprGoCxzNaGIl1vd5o56W36d2AjnaeGPOlndpTF.jpg",
         "name": "PC Building Simulator",
         "category": "Игры",
         "categoryTag": "games",
         "fullData": {
-            "iconUrl": "https://iimg.su/s/14/gNtQnfVxVFDJJOUEVQLSCEzhEvEzfsO1DJWL8QLg.png",
+            "iconUrl": "https://iimg.su/s/14/gqprGoCxzNaGIl1vd5o56W36d2AjnaeGPOlndpTF.jpg",
             "iconClass": "",
             "title": "PC Building Simulator",
             "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
@@ -74,6 +74,31 @@
             "additional": ["14 февраля 2026"],
             "developer": "Roman",
             "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/tetris"
+        }
+    },
+    {
+        "id": "ctvs",
+        "icon": "blue",
+        "iconClass": "",
+        "iconUrl": "https://iimg.su/s/14/gvoCI0rxIk6Jn6cR8s4P4gBqfn2WVJ2wgvw2jI48.png",
+        "name": "Спецназ VS Террористы",
+        "category": "Игры",
+        "categoryTag": "games",
+        "fullData": {
+            "iconUrl": "https://iimg.su/s/14/gvoCI0rxIk6Jn6cR8s4P4gBqfn2WVJ2wgvw2jI48.pngDHr=k",
+            "iconClass": "",
+            "title": "Tetris",
+            "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
+            "size": "-",
+            "age": "6+",
+            "tags": ["games", "tetris"],
+            "description": "Смесь Кс и Терарии, больше не чего добавить",
+            "gallery": [
+                
+            ],
+            "additional": ["14 февраля 2026"],
+            "developer": "Aleksey INC",
+            "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/ctvt"
         }
     }
 ]
