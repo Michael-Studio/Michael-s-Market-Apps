@@ -1,25 +1,54 @@
 [
     {
-        "id": "storage tycoon",
-        "icon": "green",
+        "id": "storage-tycoon",
+        "icon": "https://github.com/Michael-Studio/storage-tycoon/blob/main/icon.png?raw=true",
         "iconClass": "",
-        "iconUrl": "https://github.com/Michael-Studio/Michael-s-Market-Apps/blob/main/icon.png?raw=true",
+        "iconUrl": "https://github.com/Michael-Studio/storage-tycoon/blob/main/icon.png?raw=true",
         "name": "Storage Tycoon",
         "category": "Игры",
         "categoryTag": "games",
         "fullData": {
-            "iconUrl": "https://github.com/Michael-Studio/Michael-s-Market-Apps/blob/main/icon.png?raw=true",
+            "iconUrl": "https://github.com/Michael-Studio/storage-tycoon/blob/main/icon.png?raw=true",
+            "iconClass": "",
             "title": "Storage Tycoon",
+            "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
             "size": "134KB",
+            "age": "0+",
+            "tags": ["games", "storage", "tycoon", "симулятор", "бизнес"],
             "description": "Начните свой путь в 1980 году как стартап-производитель накопителей для ПК. Постройте технологическую империю, пройдя путь от простейших модулей памяти до современных SSD.",
             "gallery": [
                 "https://github.com/Michael-Studio/storage-tycoon/blob/main/7e4568c0-7868-4095-b6fa-19f9a75522ac.png?raw=true",
                 "https://github.com/Michael-Studio/storage-tycoon/blob/main/ed1fa7d2-1f7d-4bfa-a3b5-b8374e1c2dc7.png?raw=true",
                 "https://github.com/Michael-Studio/storage-tycoon/blob/main/87fd7826-8517-4fba-acbe-49ab7dcb61fa.png?raw=true"
             ],
-            "additional": ["27 января 2026", "Русский", "0+"],
+            "additional": ["27 января 2026"],
             "developer": "Michael",
             "downloadUrl": "https://michael-studio.github.io/storage-tycoon"
+        }
+    },
+    {
+        "id": "storage-tycoon",
+        "icon": "green",
+        "iconClass": "",
+        "iconUrl": "https://iimg.su/s/14/gNtQnfVxVFDJJOUEVQLSCEzhEvEzfsO1DJWL8QLg.png",
+        "name": "PC Building Simulator",
+        "category": "Игры",
+        "categoryTag": "games",
+        "fullData": {
+            "iconUrl": "https://iimg.su/s/14/gNtQnfVxVFDJJOUEVQLSCEzhEvEzfsO1DJWL8QLg.png",
+            "iconClass": "",
+            "title": "PC Building Simulator",
+            "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
+            "size": "-",
+            "age": "0+",
+            "tags": ["games", "pc building", "simulator", "бизнес"],
+            "description": "Начни в роле сборщика пк в 1995 . Построй игровую империю и свой бренд",
+            "gallery": [
+                
+            ],
+            "additional": ["14 февраля 2026"],
+            "developer": "Roman",
+            "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/roma"
         }
     }
 ]
