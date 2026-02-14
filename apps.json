@@ -108,7 +108,7 @@
         "iconUrl": "https://iimg.su/s/14/gmB82b9x7AgYPzAbV7RXwkmz7fnTZ7fUC54Xz4K4.jpg",
         "name": "Калькулятор",
         "category": "Приложения",
-        "categoryTag": "apps",
+        "categoryTag": "productivity",
         "fullData": {
             "iconUrl": "https://iimg.su/s/14/gmB82b9x7AgYPzAbV7RXwkmz7fnTZ7fUC54Xz4K4.jpg",
             "iconClass": "",
@@ -116,7 +116,7 @@
             "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
             "size": "-",
             "age": "6+",
-            "tags": ["apps", "calculator"],
+            "tags": ["productivity", "calculator"],
             "description": "Просто калькулятор",
             "gallery": [
                 
