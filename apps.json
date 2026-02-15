@@ -156,8 +156,36 @@
             "developer": "Roman",
             "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/crafttarria"
         }
+    },
+    {
+        "id": "kotvsapogax",
+        "icon": "blue",
+        "iconClass": "",
+        "iconUrl": "https://i.yapx.ru/c7NDK.png",
+        "name": "Кот в сапогах",
+        "category": "Книги",
+        "categoryTag": "books",
+        "fullData": {
+            "iconUrl": "https://i.yapx.ru/c7NDK.png",
+            "iconClass": "",
+            "title": "Кот в сапогах",
+            "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
+            "size": "-",
+            "age": "0+",
+            "oscar": 1,
+            "nomin": "Первая сказка",
+            "tags": ["books", "кот в самогах"],
+            "description": "Книга Кот в сапогах Шарль Перро",
+            "gallery": [
+                
+            ],
+            "additional": ["15 февраля 2026"],
+            "developer": "Aleksey INC",
+            "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/kotvsapogax"
+        }
     }
 ]
+
 
 
 
