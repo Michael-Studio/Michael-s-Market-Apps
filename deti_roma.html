@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Детская площадка: Все пинают мяч!</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            border: 3px solid #ffb347;
+            backdrop-filter: blur(5px);
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        #game-selector {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.98);
+            padding: 40px;
+            border-radius: 60px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border: 6px solid #4caf50;
+            z-index: 200;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        #game-selector h2 {
+            font-size: 36px;
+            color: #333;
+            margin-top: 0;
+        }
+        .game-buttons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+        }
+        .game-btn {
+            padding: 25px 50px;
+            font-size: 32px;
+            border: none;
+            border-radius: 60px;
+            background: #ff6b6b;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            border: 4px solid transparent;
+        }
+        .game-btn:hover {
+            transform: scale(1.15);
+            border-color: white;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+        .game-btn:last-child { background: #4caf50; }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 40px;
+            font-size: 18px;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        #controls kbd {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 10px;
+            margin: 0 4px;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        #current-game {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.95);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 40px;
+            font-size: 28px;
+            font-weight: bold;
+            z-index: 100;
+            border: 3px solid #ffd700;
+            backdrop-filter: blur(5px);
+        }
+        #game-progress {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: rgba(33, 150, 243, 0.95);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 40px;
+            font-size: 24px;
+            z-index: 100;
+            border: 3px solid white;
+            backdrop-filter: blur(5px);
+        }
+        #warning {
+            position: absolute;
+            top: 180px;
+            right: 20px;
+            background: rgba(255, 87, 34, 0.95);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 18px;
+            z-index: 100;
+            border: 2px solid yellow;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <div class="panel">👋 Детская площадка</div>
+        <div class="panel" id="friends-count">👥 Детей: 0/6</div>
+    </div>
+    
+    <div id="game-selector">
+        <h2>🎮 Во что поиграем?</h2>
+        <div class="game-buttons">
+            <button class="game-btn" onclick="startGame(1)">⚽ Футбол</button>
+            <button class="game-btn" onclick="startGame(2)">🏃 Салочки</button>
+        </div>
+    </div>
+
+    <div id="controls">
+        <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> — двигаться |
+        <kbd>ПРОБЕЛ</kbd> — действие
+    </div>
+    
+    <div id="current-game">
+        ⚽ Футбол
+    </div>
+    
+    <div id="game-progress">
+        Голов: 0/5
+    </div>
+
+    <div id="warning">
+        ⚡ Водящий на 10% быстрее!
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- Состояние игры ---
+        const gameState = {
+            phase: 'play',
+            currentGame: 1, // 1-футбол, 2-салочки
+            gameProgress: 0,
+            gameTarget: 5,
+            children: [],
+            player: null,
+            ball: null,
+            itIndex: -1 // индекс водящего в салочках
+        };
+
+        // --- Настройка сцены ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB);
+        
+        // --- Камера ---
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        // --- Рендерер ---
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        // --- Освещение ---
+        const sunLight = new THREE.DirectionalLight(0xfff5d1, 1.2);
+        sunLight.position.set(10, 20, 5);
+        sunLight.castShadow = true;
+        sunLight.receiveShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        const d = 15;
+        sunLight.shadow.camera.left = -d;
+        sunLight.shadow.camera.right = d;
+        sunLight.shadow.camera.top = d;
+        sunLight.shadow.camera.bottom = -d;
+        scene.add(sunLight);
+
+        const ambientLight = new THREE.AmbientLight(0x505070);
+        scene.add(ambientLight);
+
+        // --- Пол ---
+        const groundGeometry = new THREE.CircleGeometry(20, 64);
+        
+        // Текстура травы
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#7ec850';
+        ctx.fillRect(0, 0, 512, 512);
+        for (let i = 0; i < 5000; i++) {
+            ctx.fillStyle = `rgba(50, 100, 30, ${Math.random() * 0.3})`;
+            ctx.fillRect(Math.floor(Math.random() * 512), Math.floor(Math.random() * 512), 2, 2);
+        }
+        const grassTexture = new THREE.CanvasTexture(canvas);
+        
+        const groundMaterial = new THREE.MeshStandardMaterial({ map: grassTexture });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = 0;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Ворота для футбола (2 штуки)
+        const goalMat = new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true });
+        const goal1 = new THREE.Mesh(new THREE.BoxGeometry(3, 2, 0.5), goalMat);
+        goal1.position.set(0, 1, -9.5);
+        scene.add(goal1);
+        
+        const goal2 = new THREE.Mesh(new THREE.BoxGeometry(3, 2, 0.5), goalMat);
+        goal2.position.set(0, 1, 9.5);
+        scene.add(goal2);
+
+        // Невидимые стены
+        const wallMat = new THREE.MeshBasicMaterial({ visible: false });
+        const walls = [
+            { pos: [0, 1, -10], size: [20, 2, 1] },
+            { pos: [0, 1, 10], size: [20, 2, 1] },
+            { pos: [-10, 1, 0], size: [1, 2, 20] },
+            { pos: [10, 1, 0], size: [1, 2, 20] }
+        ];
+        
+        walls.forEach(w => {
+            const wall = new THREE.Mesh(new THREE.BoxGeometry(...w.size), wallMat);
+            wall.position.set(...w.pos);
+            scene.add(wall);
+        });
+
+        // Деревья
+        function createTree(x, z) {
+            const group = new THREE.Group();
+            const trunk = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.5, 0.7, 2.5),
+                new THREE.MeshStandardMaterial({ color: 0x8B4513 })
+            );
+            trunk.position.y = 1.25;
+            trunk.castShadow = true;
+            trunk.receiveShadow = true;
+            group.add(trunk);
+            
+            const leafMat = new THREE.MeshStandardMaterial({ color: 0x2e8b57 });
+            for (let i = 0; i < 3; i++) {
+                const leaf = new THREE.Mesh(
+                    new THREE.ConeGeometry(1.0 - i*0.2, 1.5 - i*0.3, 8),
+                    leafMat
+                );
+                leaf.position.y = 2.5 + i*1.0;
+                leaf.castShadow = true;
+                leaf.receiveShadow = true;
+                group.add(leaf);
+            }
+            group.position.set(x, 0, z);
+            return group;
+        }
+
+        scene.add(createTree(-6, -6));
+        scene.add(createTree(7, 5));
+        scene.add(createTree(-5, 7));
+        scene.add(createTree(6, -5));
+
+        // --- Функция создания ребенка ---
+        function createChild(color, isPlayer = false) {
+            const group = new THREE.Group();
+            
+            // Тело
+            const torso = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.35, 0.4, 1.0),
+                new THREE.MeshStandardMaterial({ color: color })
+            );
+            torso.position.y = 0.6;
+            torso.castShadow = true;
+            torso.receiveShadow = true;
+            group.add(torso);
+            
+            // Голова
+            const head = new THREE.Mesh(
+                new THREE.SphereGeometry(0.3, 16),
+                new THREE.MeshStandardMaterial({ color: 0xffdd99 })
+            );
+            head.position.y = 1.2;
+            head.castShadow = true;
+            head.receiveShadow = true;
+            group.add(head);
+            
+            // Глаза
+            const eyeGeo = new THREE.SphereGeometry(0.05, 8);
+            const eyeMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            
+            const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+            eyeL.position.set(-0.12, 1.28, 0.25);
+            group.add(eyeL);
+            
+            const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+            eyeR.position.set(0.12, 1.28, 0.25);
+            group.add(eyeR);
+            
+            // Шапка (для разнообразия)
+            if (Math.random() > 0.5) {
+                const hat = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.25, 0.3, 8),
+                    new THREE.MeshStandardMaterial({ color: 0xff4444 })
+                );
+                hat.position.y = 1.45;
+                hat.castShadow = true;
+                group.add(hat);
+            }
+            
+            // Руки
+            const armGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.7);
+            const armMat = new THREE.MeshStandardMaterial({ color: color });
+            
+            const leftArm = new THREE.Mesh(armGeo, armMat);
+            leftArm.position.set(-0.45, 0.9, 0);
+            leftArm.rotation.z = 0.2;
+            leftArm.castShadow = true;
+            group.add(leftArm);
+            
+            const rightArm = new THREE.Mesh(armGeo, armMat);
+            rightArm.position.set(0.45, 0.9, 0);
+            rightArm.rotation.z = -0.2;
+            rightArm.castShadow = true;
+            group.add(rightArm);
+            
+            // Ноги
+            const legGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.7);
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x4a4a4a });
+            
+            const leftLeg = new THREE.Mesh(legGeo, legMat);
+            leftLeg.position.set(-0.2, 0.25, 0);
+            leftLeg.castShadow = true;
+            group.add(leftLeg);
+            
+            const rightLeg = new THREE.Mesh(legGeo, legMat);
+            rightLeg.position.set(0.2, 0.25, 0);
+            rightLeg.castShadow = true;
+            group.add(rightLeg);
+            
+            group.userData = {
+                velocity: { x: 0, z: 0 },
+                radius: 0.5,
+                isPlayer: isPlayer,
+                isIt: false,
+                color: color,
+                kickCooldown: 0
+            };
+            
+            return group;
+        }
+
+        // --- Создаем игрока ---
+        const player = createChild(0xff6b6b, true);
+        player.position.set(0, 0, 0);
+        scene.add(player);
+        gameState.player = player;
+
+        // --- Создаем 5 друзей ---
+        const colors = [0xffaa88, 0x88aaff, 0xaaff88, 0xff88aa, 0xffdd44];
+        const startPositions = [
+            { x: 3, z: 2 },
+            { x: -3, z: 4 },
+            { x: 4, z: -3 },
+            { x: -4, z: -2 },
+            { x: 2, z: -4 }
+        ];
+
+        startPositions.forEach((pos, i) => {
+            const child = createChild(colors[i]);
+            child.position.set(pos.x, 0, pos.z);
+            child.userData.originalColor = colors[i];
+            scene.add(child);
+            gameState.children.push(child);
+        });
+
+        // --- Создаем мяч ---
+        const ball = new THREE.Mesh(
+            new THREE.SphereGeometry(0.3, 24),
+            new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0x332200 })
+        );
+        ball.position.set(2, 0.3, 2);
+        ball.castShadow = true;
+        ball.receiveShadow = true;
+        ball.userData = { 
+            velocity: { x: 0, z: 0 }, 
+            radius: 0.3,
+            lastKicker: null
+        };
+        scene.add(ball);
+        gameState.ball = ball;
+
+        // --- Физика коллизий ---
+        function checkCollision(obj1, obj2) {
+            const dx = obj1.position.x - obj2.position.x;
+            const dz = obj1.position.z - obj2.position.z;
+            const dist = Math.sqrt(dx*dx + dz*dz);
+            const minDist = (obj1.userData.radius || 0.5) + (obj2.userData.radius || 0.5);
+            
+            if (dist < minDist) {
+                const angle = Math.atan2(dx, dz);
+                const overlap = minDist - dist;
+                const pushX = Math.sin(angle) * overlap * 0.5;
+                const pushZ = Math.cos(angle) * overlap * 0.5;
+                
+                if (!obj1.userData.isPlayer) obj1.position.x += pushX;
+                if (!obj2.userData.isPlayer) obj2.position.x -= pushX;
+                if (!obj1.userData.isPlayer) obj1.position.z += pushZ;
+                if (!obj2.userData.isPlayer) obj2.position.z -= pushZ;
+                
+                return true;
+            }
+            return false;
+        }
+
+        // --- Управление ---
+        const keyState = { w: false, a: false, s: false, d: false, space: false };
+        
+        window.addEventListener('keydown', (e) => {
+            switch(e.code) {
+                case 'KeyW': keyState.w = true; e.preventDefault(); break;
+                case 'KeyA': keyState.a = true; e.preventDefault(); break;
+                case 'KeyS': keyState.s = true; e.preventDefault(); break;
+                case 'KeyD': keyState.d = true; e.preventDefault(); break;
+                case 'Space': 
+                    keyState.space = true; 
+                    e.preventDefault();
+                    handleAction();
+                    break;
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            switch(e.code) {
+                case 'KeyW': keyState.w = false; e.preventDefault(); break;
+                case 'KeyA': keyState.a = false; e.preventDefault(); break;
+                case 'KeyS': keyState.s = false; e.preventDefault(); break;
+                case 'KeyD': keyState.d = false; e.preventDefault(); break;
+                case 'Space': keyState.space = false; e.preventDefault(); break;
+            }
+        });
+
+        // --- Действие (пробел) ---
+        function handleAction() {
+            if (gameState.currentGame === 1) { // Футбол - удар по мячу
+                kickBall(player, 0.4);
+            } else if (gameState.currentGame === 2) { // Салочки - осалить
+                gameState.children.forEach((child, index) => {
+                    const d = player.position.distanceTo(child.position);
+                    if (d < 1.2 && !child.userData.isIt) {
+                        // Передаем роль водящего
+                        if (gameState.itIndex !== -1) {
+                            gameState.children[gameState.itIndex].userData.isIt = false;
+                            gameState.children[gameState.itIndex].children[0].material.color.setHex(
+                                gameState.children[gameState.itIndex].userData.originalColor
+                            );
+                        }
+                        
+                        child.userData.isIt = true;
+                        child.children[0].material.color.setHex(0xff0000); // Красный
+                        gameState.itIndex = index;
+                        gameState.gameProgress++;
+                        updateUI();
+                        
+                        // Показываем предупреждение о скорости
+                        document.getElementById('warning').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('warning').style.display = 'none';
+                        }, 2000);
+                    }
+                });
+            }
+        }
+
+        // --- Функция удара по мячу ---
+        function kickBall(kicker, forceMultiplier = 1.0) {
+            const dx = ball.position.x - kicker.position.x;
+            const dz = ball.position.z - kicker.position.z;
+            const dist = Math.sqrt(dx*dx + dz*dz);
+            
+            if (dist < 1.5) {
+                // Направление удара от игрока к мячу
+                const angle = Math.atan2(dx, dz);
+                const force = 0.3 * forceMultiplier;
+                ball.userData.velocity.x += Math.sin(angle) * force;
+                ball.userData.velocity.z += Math.cos(angle) * force;
+                
+                // Ограничение максимальной скорости
+                const maxSpeed = 0.5;
+                const speed = Math.sqrt(
+                    ball.userData.velocity.x**2 + 
+                    ball.userData.velocity.z**2
+                );
+                if (speed > maxSpeed) {
+                    ball.userData.velocity.x *= maxSpeed / speed;
+                    ball.userData.velocity.z *= maxSpeed / speed;
+                }
+                
+                ball.userData.lastKicker = kicker;
+            }
+        }
+
+        // --- ИИ детей ---
+        function updateAI() {
+            // Обновление кулдаунов
+            gameState.children.forEach(child => {
+                if (child.userData.kickCooldown > 0) {
+                    child.userData.kickCooldown -= 0.01;
+                }
+            });
+
+            if (gameState.currentGame === 1) { // Футбол - все бегут к мячу и пинают
+                gameState.children.forEach(child => {
+                    if (Math.random() < 0.01) { // Шанс удара
+                        kickBall(child, 0.3);
+                        child.userData.kickCooldown = 0.5;
+                    }
+                    
+                    // Движение к мячу
+                    const dx = ball.position.x - child.position.x;
+                    const dz = ball.position.z - child.position.z;
+                    const dist = Math.sqrt(dx*dx + dz*dz);
+                    
+                    if (dist > 0.8) {
+                        child.position.x += dx * 0.012;
+                        child.position.z += dz * 0.012;
+                    }
+                    
+                    // Поворот в сторону движения
+                    if (Math.abs(dx) > 0.1 || Math.abs(dz) > 0.1) {
+                        child.rotation.y = Math.atan2(dx, dz);
+                    }
+                });
+                
+            } else if (gameState.currentGame === 2) { // Салочки
+                const playerSpeed = 0.08;
+                const chaserSpeed = playerSpeed * 1.1; // +10% скорости
+                
+                gameState.children.forEach((child, index) => {
+                    if (child.userData.isIt) {
+                        // Водящий бежит за игроком
+                        const dx = player.position.x - child.position.x;
+                        const dz = player.position.z - child.position.z;
+                        const dist = Math.sqrt(dx*dx + dz*dz);
+                        
+                        if (dist > 0.5) {
+                            child.position.x += dx * 0.018; // Быстрее игрока
+                            child.position.z += dz * 0.018;
+                        }
+                    } else {
+                        // Остальные убегают от водящего
+                        if (gameState.itIndex !== -1) {
+                            const it = gameState.children[gameState.itIndex];
+                            const dx = child.position.x - it.position.x;
+                            const dz = child.position.z - it.position.z;
+                            const dist = Math.sqrt(dx*dx + dz*dz);
+                            
+                            // Убегаем в противоположную сторону
+                            if (dist < 3.0) {
+                                child.position.x += dx * 0.015;
+                                child.position.z += dz * 0.015;
+                            } else {
+                                // Случайное блуждание
+                                child.position.x += (Math.random() - 0.5) * 0.03;
+                                child.position.z += (Math.random() - 0.5) * 0.03;
+                            }
+                        }
+                    }
+                    
+                    // Ограничение границ
+                    child.position.x = Math.max(-8, Math.min(8, child.position.x));
+                    child.position.z = Math.max(-8, Math.min(8, child.position.z));
+                });
+            }
+        }
+
+        // --- Обновление UI ---
+        function updateUI() {
+            document.getElementById('friends-count').innerHTML = `👥 Детей: ${gameState.children.length + 1}/6`;
+            
+            let gameName = gameState.currentGame === 1 ? 'Футбол' : 'Салочки';
+            let emoji = gameState.currentGame === 1 ? '⚽' : '🏃';
+            document.getElementById('current-game').innerHTML = `${emoji} ${gameName}`;
+            
+            let progressText = gameState.currentGame === 1 
+                ? `Голов: ${gameState.gameProgress}/${gameState.gameTarget}`
+                : `Осалено: ${gameState.gameProgress}/${gameState.gameTarget}`;
+            
+            document.getElementById('game-progress').innerHTML = progressText;
+        }
+
+        // --- Камера ---
+        function updateCamera() {
+            camera.position.x = player.position.x + 5;
+            camera.position.y = player.position.y + 4;
+            camera.position.z = player.position.z + 7;
+            camera.lookAt(player.position);
+        }
+
+        // --- Анимация ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Движение игрока
+            const speed = 0.08;
+            let moveX = 0, moveZ = 0;
+            if (keyState.w) moveZ -= speed;
+            if (keyState.s) moveZ += speed;
+            if (keyState.a) moveX -= speed;
+            if (keyState.d) moveX += speed;
+            
+            if (moveX !== 0 || moveZ !== 0) {
+                if (moveX !== 0 && moveZ !== 0) {
+                    moveX *= 0.7;
+                    moveZ *= 0.7;
+                }
+                
+                const newX = player.position.x + moveX;
+                const newZ = player.position.z + moveZ;
+                
+                if (Math.abs(newX) < 9 && Math.abs(newZ) < 9) {
+                    player.position.x = newX;
+                    player.position.z = newZ;
+                }
+                
+                player.rotation.y = Math.atan2(moveX, moveZ);
+            }
+
+            // Физика мяча
+            if (gameState.ball) {
+                ball.userData.velocity.x *= 0.98;
+                ball.userData.velocity.z *= 0.98;
+                
+                ball.position.x += ball.userData.velocity.x;
+                ball.position.z += ball.userData.velocity.z;
+                
+                // Отскок от границ
+                if (Math.abs(ball.position.x) > 9) {
+                    ball.position.x = Math.sign(ball.position.x) * 9;
+                    ball.userData.velocity.x *= -0.7;
+                    
+                    if (gameState.currentGame === 1) {
+                        gameState.gameProgress++;
+                        updateUI();
+                    }
+                }
+                if (Math.abs(ball.position.z) > 9) {
+                    ball.position.z = Math.sign(ball.position.z) * 9;
+                    ball.userData.velocity.z *= -0.7;
+                    
+                    if (gameState.currentGame === 1) {
+                        gameState.gameProgress++;
+                        updateUI();
+                    }
+                }
+                
+                // Отскок от ворот (дополнительные очки)
+                if (gameState.currentGame === 1) {
+                    if (Math.abs(ball.position.z) > 8.5 && Math.abs(ball.position.x) < 1.5) {
+                        if (Math.abs(ball.userData.velocity.z) > 0.1) {
+                            gameState.gameProgress++;
+                            updateUI();
+                        }
+                    }
+                }
+            }
+
+            // Коллизии между детьми
+            for (let i = 0; i < gameState.children.length; i++) {
+                for (let j = i + 1; j < gameState.children.length; j++) {
+                    checkCollision(gameState.children[i], gameState.children[j]);
+                }
+                checkCollision(player, gameState.children[i]);
+                if (gameState.ball) {
+                    checkCollision(gameState.ball, gameState.children[i]);
+                    checkCollision(gameState.ball, player);
+                }
+            }
+
+            // ИИ детей
+            updateAI();
+
+            // Проверка победы
+            if (gameState.gameProgress >= gameState.gameTarget) {
+                gameState.gameProgress = 0;
+                showGameSelector();
+            }
+
+            updateCamera();
+            renderer.render(scene, camera);
+        }
+
+        // --- Выбор игры ---
+        window.showGameSelector = function() {
+            gameState.phase = 'select';
+            document.getElementById('game-selector').style.display = 'block';
+            
+            // Сброс состояния
+            gameState.children.forEach((child, i) => {
+                child.userData.isIt = false;
+                child.children[0].material.color.setHex(child.userData.originalColor);
+            });
+            gameState.itIndex = -1;
+            
+            // Возвращаем мяч в центр
+            if (gameState.ball) {
+                gameState.ball.position.set(2, 0.3, 2);
+                gameState.ball.userData.velocity = { x: 0, z: 0 };
+            }
+        };
+
+        window.startGame = function(gameNum) {
+            gameState.currentGame = gameNum;
+            gameState.gameProgress = 0;
+            gameState.phase = 'play';
+            document.getElementById('game-selector').style.display = 'none';
+            
+            // Сброс
+            gameState.children.forEach(child => {
+                child.userData.isIt = false;
+                child.children[0].material.color.setHex(child.userData.originalColor);
+            });
+            gameState.itIndex = -1;
+            
+            if (gameNum === 2) {
+                // Выбираем случайного водящего в салочках
+                const randomIndex = Math.floor(Math.random() * gameState.children.length);
+                gameState.children[randomIndex].userData.isIt = true;
+                gameState.children[randomIndex].children[0].material.color.setHex(0xff0000);
+                gameState.itIndex = randomIndex;
+            }
+            
+            updateUI();
+        };
+
+        // Сохраняем оригинальные цвета
+        gameState.children.forEach((child, i) => {
+            child.userData.originalColor = colors[i];
+        });
+
+        // Показываем выбор игры при старте
+        setTimeout(showGameSelector, 1000);
+
+        animate();
+
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
