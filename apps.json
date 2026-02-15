@@ -199,6 +199,8 @@
             "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
             "size": "-",
             "age": "0+",
+            "oscar": 1,
+            "nomin": "Первая 3D игра + Первый транспорт",
             "tags": ["games", "дикая", "охота"],
             "description": "дикий охотник с оружием фпс шутер оружие машина ",
             "gallery": [
@@ -236,6 +238,7 @@
         }
     }
 ]
+
 
 
 
