@@ -277,7 +277,7 @@
             "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
             "size": "-",
             "age": "6+",
-            "tags": ["kids", "весело"],
+            "tags": ["games", "чернобыль"],
             "description": "Игра основаны на игре Спецназ vs Террористы Aleksey INK",
             "gallery": [
 
@@ -288,6 +288,7 @@
         }
     }
 ]
+
 
 
 
