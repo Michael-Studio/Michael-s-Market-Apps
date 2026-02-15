@@ -209,8 +209,34 @@
             "developer": "Roman",
             "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/SDO"
         }
+    },
+    {
+        "id": "detiiii",
+        "icon": "blue",
+        "iconClass": "",
+        "iconUrl": "https://i.yapx.ru/c7M8y.jpg",
+        "name": "Дети весело играют",
+        "category": "Дети",
+        "categoryTag": "kids",
+        "fullData": {
+            "iconUrl": "https://i.yapx.ru/c7M8y.jpg",
+            "iconClass": "",
+            "title": "Дети весело играют",
+            "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
+            "size": "-",
+            "age": "0+",
+            "tags": ["kids", "весело"],
+            "description": "Детишки цветы жизни это самое лучшее в жизни",
+            "gallery": [
+
+            ],
+            "additional": ["15 февраля 2026"],
+            "developer": "Roman",
+            "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/deti_roma"
+        }
     }
 ]
+
 
 
 
