@@ -236,8 +236,34 @@
             "developer": "Roman",
             "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/deti_roma"
         }
+    },
+    {
+        "id": "btctraid",
+        "icon": "orange",
+        "iconClass": "",
+        "iconUrl": "https://images.icon-icons.com/1385/PNG/512/btc-crypto-cryptocurrency-cryptocurrencies-cash-money-bank-payment_95386.png",
+        "name": "BitCoin Traider Sim",
+        "category": "Игры",
+        "categoryTag": "games",
+        "fullData": {
+            "iconUrl": "https://images.icon-icons.com/1385/PNG/512/btc-crypto-cryptocurrency-cryptocurrencies-cash-money-bank-payment_95386.png",
+            "iconClass": "",
+            "title": "BitCoin Traider Sim",
+            "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
+            "size": "-",
+            "age": "6+",
+            "tags": ["games", "btc"],
+            "description": "Продавай, покупай!",
+            "gallery": [
+                
+            ],
+            "additional": ["14 февраля 2026"],
+            "developer": "Anonymous Team",
+            "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/btc"
+        }
     }
 ]
+
 
 
 
