@@ -91,6 +91,7 @@
             "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
             "size": "-",
             "age": "6+",
+            "oscar": 1,
             "tags": ["games", "tetris"],
             "description": "Смесь Кс и Терарии, больше не чего добавить 14.02.2026 Обновление 2.0",
             "gallery": [
@@ -141,6 +142,7 @@
             "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
             "size": "-",
             "age": "6+",
+            "oscar": 1,
             "tags": ["games", "crafttarria"],
             "description": "Создавай, исследуй, строй!",
             "gallery": [
@@ -154,5 +156,6 @@
         }
     }
 ]
+
 
 
