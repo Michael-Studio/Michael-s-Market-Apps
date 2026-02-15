@@ -261,8 +261,34 @@
             "developer": "Anonymous Team",
             "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/btc"
         }
+    },
+    {
+        "id": "ctvtch",
+        "icon": "blue",
+        "iconClass": "",
+        "iconUrl": "https://avatars.mds.yandex.net/i?id=0b1e397d2262e9fd621df26a2268898c1a146cba-5910641-images-thumbs&n=13",
+        "name": "Спецназ vs Террористы: чернобыль ",
+        "category": "ИГРЫ",
+        "categoryTag": "games",
+        "fullData": {
+            "iconUrl": "https://avatars.mds.yandex.net/i?id=0b1e397d2262e9fd621df26a2268898c1a146cba-5910641-images-thumbs&n=13",
+            "iconClass": "",
+            "title": "Спецназ vs Террористы: чернобыль ",
+            "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
+            "size": "-",
+            "age": "6+",
+            "tags": ["kids", "весело"],
+            "description": "Игра основаны на игре Спецназ vs Террористы Aleksey INK",
+            "gallery": [
+
+            ],
+            "additional": ["15 февраля 2026"],
+            "developer": "Roman",
+            "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/stalker"
+        }
     }
 ]
+
 
 
 
