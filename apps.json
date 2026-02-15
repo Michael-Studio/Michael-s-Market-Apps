@@ -183,8 +183,35 @@
             "developer": "Aleksey INC",
             "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/kotvsapogax"
         }
+    },
+    {
+        "id": "dikayaoxota",
+        "icon": "blue",
+        "iconClass": "",
+        "iconUrl": "https://i.yapx.ru/c7OFG.png",
+        "name": "Дикая охота с оружием фпс",
+        "category": "Книги",
+        "categoryTag": "games",
+        "fullData": {
+            "iconUrl": "https://i.yapx.ru/c7OFG.png",
+            "iconClass": "",
+            "title": "Дикая охота с оружием фпс",
+            "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
+            "size": "-",
+            "age": "0+",
+            "tags": ["games", "дикая", "охота"],
+            "description": "дикий охотник с оружием фпс шутер оружие машина ",
+            "gallery": [
+                "https://i.yapx.ru/c7OFZ.png",
+                "https://i.yapx.ru/c7OFf.png"
+            ],
+            "additional": ["15 февраля 2026"],
+            "developer": "Roman",
+            "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/SDO"
+        }
     }
 ]
+
 
 
 
