@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terraria-style: рыбалка работает, двери открываются, сундуки хранят</title>
+    <title>Terraria-style: Полная версия + Моды + Мультиплеер</title>
     <style>
         * {
             margin: 0;
@@ -64,6 +64,7 @@
             color: white;
             font-size: 12px;
             transition: 0.1s;
+            cursor: pointer;
         }
         .slot.selected {
             border-color: #ffaa00;
@@ -117,6 +118,32 @@
             color: white;
             z-index: 300;
         }
+        #play-time {
+            position: fixed;
+            top: 10px;
+            right: 200px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 2px solid #ffaa00;
+            font-weight: bold;
+            color: white;
+            z-index: 300;
+        }
+        #connection-status {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: 2px solid #00ff00;
+            font-weight: bold;
+            color: #00ff00;
+            z-index: 1000;
+            display: none;
+        }
         #craft-menu, #adv-craft-menu, #furnace-menu {
             position: fixed;
             top: 50%;
@@ -129,10 +156,12 @@
             display: none;
             flex-wrap: wrap;
             gap: 10px;
-            max-width: 600px;
+            max-width: 800px;
             pointer-events: auto;
             z-index: 300;
             color: white;
+            overflow-y: auto;
+            max-height: 80vh;
         }
         .craft-recipe {
             width: 120px;
@@ -147,6 +176,13 @@
         .craft-recipe:hover {
             background: #554;
             border-color: #ffaa00;
+        }
+        .recipe-category {
+            width: 100%;
+            color: #ffaa00;
+            font-size: 18px;
+            margin-top: 10px;
+            border-bottom: 1px solid #ffaa00;
         }
         #btn-save {
             position: fixed;
@@ -176,15 +212,262 @@
             pointer-events: auto;
             z-index: 200;
         }
+        #mod-manager-btn {
+            position: fixed;
+            bottom: 120px;
+            left: 260px;
+            background: #a2a;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: 200;
+        }
+        #mod-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            max-height: 80vh;
+            background: #1a1a2e;
+            border: 3px solid #ffaa00;
+            border-radius: 20px;
+            padding: 20px;
+            color: white;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: auto;
+        }
+        .mod-item {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mod-name { font-weight: bold; color: #ffaa00; }
+        .mod-status { color: #0f0; }
+        .mod-error { color: #f00; }
+        .mod-actions button {
+            margin-left: 5px;
+            background: #0f3460;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #mod-input-file {
+            display: none;
+        }
+        #menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', monospace;
+        }
+        .menu-container {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border: 3px solid #ffaa00;
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 50px #ffaa00;
+        }
+        .menu-title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffaa00;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #ffaa00;
+        }
+        .menu-subtitle {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+        .menu-button {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            margin: 15px 0;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .menu-button.singleplayer {
+            background: linear-gradient(145deg, #2a2, #1a4a1a);
+            color: white;
+            box-shadow: 0 0 20px #0f0;
+        }
+        .menu-button.singleplayer:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px #0f0;
+        }
+        .menu-button.multiplayer {
+            background: linear-gradient(145deg, #22a, #1a1a4a);
+            color: white;
+            box-shadow: 0 0 20px #00f;
+        }
+        .menu-button.multiplayer:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px #00f;
+        }
+        .menu-button.back {
+            background: linear-gradient(145deg, #a22, #4a1a1a);
+            color: white;
+            box-shadow: 0 0 20px #f00;
+            font-size: 18px;
+            padding: 15px;
+        }
+        .menu-input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 18px;
+            background: #0a0a1a;
+            border: 2px solid #ffaa00;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+        .menu-label {
+            color: #ffaa00;
+            font-size: 16px;
+            margin-top: 10px;
+            display: block;
+        }
         #debug {
             position: fixed;
             bottom: 200px;
             left: 20px;
             color: #0f0;
-            background: #000;
-            padding: 5px;
-            font-size: 12px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 10px;
+            border: 1px solid #0f0;
             pointer-events: none;
+            z-index: 500;
+            font-family: monospace;
+            max-width: 300px;
+        }
+        #coordinates {
+            position: fixed;
+            bottom: 200px;
+            right: 20px;
+            color: #ffaa00;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: 2px solid #ffaa00;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 500;
+            font-family: monospace;
+        }
+        #chat-box {
+            position: fixed;
+            bottom: 120px;
+            right: 20px;
+            width: 300px;
+            height: 200px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 10px;
+            color: white;
+            font-family: monospace;
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        #chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        #chat-input {
+            width: 100%;
+            padding: 5px;
+            background: #222;
+            border: 1px solid #00ff00;
+            color: white;
+            border-radius: 3px;
+        }
+        #player-list {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            width: 200px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 10px;
+            color: white;
+            font-family: monospace;
+            display: none;
+            z-index: 1000;
+        }
+        #fishing-bobber {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: red;
+            border-radius: 50%;
+            display: none;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        #burn-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            background: rgba(255, 69, 0, 0.2);
+            animation: burnFlicker 0.1s infinite;
+        }
+        @keyframes burnFlicker {
+            0% { background: rgba(255, 69, 0, 0.2); }
+            50% { background: rgba(255, 140, 0, 0.4); }
+            100% { background: rgba(255, 69, 0, 0.2); }
+        }
+        @keyframes bobberFloat {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+        .fishing-active {
+            animation: bobberFloat 1s infinite;
         }
         #death-message {
             position: fixed;
@@ -205,7 +488,7 @@
         #coin-counter {
             position: fixed;
             top: 10px;
-            right: 200px;
+            right: 350px;
             background: gold;
             color: black;
             padding: 5px 15px;
@@ -213,6 +496,25 @@
             font-weight: bold;
             border: 2px solid #aa8;
             z-index: 300;
+        }
+        .villager-name {
+            color: #ffaa00;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        #mod-share-btn {
+            background: #4e9a06;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .mod-source {
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
         }
     </style>
 </head>
@@ -225,14 +527,31 @@
             <div class="bar"><div id="hunger-fill" class="bar-fill" style="width:100%"></div></div>
         </div>
         <div id="clock">☀️ День 1</div>
-        <div id="debug"></div>
+        <div id="play-time">⏱️ 0:00</div>
         <div id="coin-counter">🪙 0</div>
+        <div id="connection-status">🌐 Подключено к серверу</div>
     </div>
+
+    <div id="coordinates">📍 X: 0, Y: 0</div>
+    <div id="fishing-bobber"></div>
+    <div id="burn-effect"></div>
+    <div id="debug"></div>
 
     <div id="hotbar"></div>
 
+    <div id="chat-box">
+        <div id="chat-messages"></div>
+        <input type="text" id="chat-input" placeholder="Чат... (Enter)">
+    </div>
+
+    <div id="player-list">
+        <div style="color:#00ff00; text-align:center; margin-bottom:5px;">👥 Игроки</div>
+        <div id="player-list-content"></div>
+    </div>
+
     <button id="btn-save">💾 Сохранить</button>
     <button id="btn-load">📂 Загрузить</button>
+    <button id="mod-manager-btn">🔌 Моды</button>
 
     <div id="craft-menu">
         <h3 style="width:100%; text-align:center;">Базовый крафт (E)</h3>
@@ -243,63 +562,313 @@
         <div class="craft-recipe" id="craft-chest">📦 Сундук<br><small>8 дерева</small></div>
         <div class="craft-recipe" id="craft-stonepickaxe">⛏️ Каменная кирка<br><small>3 камня</small></div>
         <div class="craft-recipe" id="craft-stoneaxe">🪓 Каменный топор<br><small>3 камня</small></div>
-        <div class="craft-recipe" id="craft-fishingrod">🎣 Удочка<br><small>5 дерева</small></div>
+        <div class="craft-recipe" id="craft-fishingrod">🎣 Удочка<br><small>5 дерева, 2 нити</small></div>
         <div class="craft-recipe" id="craft-bread">🍞 Хлеб<br><small>3 пшеницы</small></div>
         <div class="craft-recipe" id="craft-torch">🕯️ Факел (3)<br><small>1 уголь, 1 палка</small></div>
-        <div class="craft-recipe" id="craft-copperpickaxe">⛏️ Медная кирка<br><small>3 меди, 2 дерева</small></div>
-        <div class="craft-recipe" id="craft-coppersword">⚔️ Медный меч<br><small>3 меди, 1 дерево</small></div>
-        <div class="craft-recipe" id="craft-boomerang">🪃 Бумеранг<br><small>3 дерева, 1 железо</small></div>
-        <div class="craft-recipe" id="craft-bow">🏹 Лук<br><small>3 дерева, 1 нить</small></div>
-        <div class="craft-recipe" id="craft-arrow">🏹 Стрелы (5)<br><small>1 камень, 1 дерево</small></div>
-        <div class="craft-recipe" id="craft-hook">🪝 Крюк-кошка<br><small>3 железа, 1 веревка</small></div>
+        <div class="craft-recipe" id="craft-bucket">🪣 Ведро<br><small>3 железа</small></div>
     </div>
 
     <div id="adv-craft-menu">
         <h3 style="width:100%; text-align:center;">Продвинутый крафт (верстак)</h3>
+        
+        <div class="recipe-category">🔧 Инструменты и оружие</div>
         <div class="craft-recipe" id="craft-furnace">🔥 Печь<br><small>10 камня, 3 глины</small></div>
         <div class="craft-recipe" id="craft-iron-sword">⚔️ Железный меч<br><small>3 железа, 1 дерево</small></div>
         <div class="craft-recipe" id="craft-iron-pickaxe">⛏️ Железная кирка<br><small>3 железа, 2 дерева</small></div>
         <div class="craft-recipe" id="craft-iron-axe">🪓 Железный топор<br><small>3 железа, 2 дерева</small></div>
-        <div class="craft-recipe" id="craft-copper-helmet">🪖 Медный шлем<br><small>5 меди</small></div>
-        <div class="craft-recipe" id="craft-copper-chest">👕 Медный нагрудник<br><small>8 меди</small></div>
-        <div class="craft-recipe" id="craft-copper-leggings">👖 Медные поножи<br><small>6 меди</small></div>
-        <div class="craft-recipe" id="craft-iron-helmet">🪖 Железный шлем<br><small>5 железа</small></div>
-        <div class="craft-recipe" id="craft-iron-chest">👕 Железный нагрудник<br><small>8 железа</small></div>
-        <div class="craft-recipe" id="craft-iron-leggings">👖 Железные поножи<br><small>6 железа</small></div>
+        
+        <div class="recipe-category">💻 Компьютерные компоненты</div>
+        <div class="craft-recipe" id="craft-cpu">⚙️ Процессор<br><small>3 железа, 2 угля, 1 глина</small></div>
+        <div class="craft-recipe" id="craft-ram">🧠 Оперативная память (2)<br><small>2 меди, 1 уголь</small></div>
+        <div class="craft-recipe" id="craft-hdd">💾 Жёсткий диск<br><small>2 железа, 2 глины</small></div>
+        <div class="craft-recipe" id="craft-monitor">🖥️ Монитор<br><small>2 камня, 1 железо, 2 дерева</small></div>
+        <div class="craft-recipe" id="craft-keyboard">⌨️ Клавиатура<br><small>3 дерева, 5 монет</small></div>
+        <div class="craft-recipe" id="craft-computer">💻 Компьютер<br><small>⚙️+🧠x2+💾+🖥️+⌨️</small></div>
+        
+        <div class="recipe-category">🏭 Трубы</div>
+        <div class="craft-recipe" id="craft-pipe">🔧 Труба (6)<br><small>3 железных слитка</small></div>
+        
+        <div class="recipe-category">🔥 Лава</div>
+        <div class="craft-recipe" id="craft-lava-bucket">🧪 Ведро лавы<br><small>1 ведро, 1 лава</small></div>
+        <div class="craft-recipe" id="craft-obsidian">🪨 Обсидиан<br><small>1 вода + 1 лава</small></div>
+        
+        <div class="recipe-category">🎣 Рыбалка</div>
+        <div class="craft-recipe" id="craft-fishing-rod-iron">🎣 Железная удочка<br><small>3 железа, 2 нити</small></div>
+        <div class="craft-recipe" id="craft-fishing-rod-golden">🎣 Золотая удочка<br><small>3 золота, 3 нити</small></div>
     </div>
 
     <div id="furnace-menu">
         <h3 style="width:100%; text-align:center;">Печь (плавка)</h3>
         <div class="craft-recipe" id="smelt-iron">🔩 Железный слиток<br><small>1 железная руда + 1 уголь</small></div>
         <div class="craft-recipe" id="smelt-copper">🔩 Медный слиток<br><small>1 медная руда + 1 уголь</small></div>
+        <div class="craft-recipe" id="smelt-glass">🧪 Стекло<br><small>1 песок + 1 уголь</small></div>
+        <div class="craft-recipe" id="smelt-gold">🪙 Золотой слиток<br><small>1 золотая руда + 2 угля</small></div>
+    </div>
+
+    <div id="mod-panel">
+        <h2 style="color:#ffaa00; margin:0 0 10px 0;">Менеджер модов</h2>
+        <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+            <button id="mod-add-btn" style="background:#4e9a06; border:none; color:white; padding:8px; border-radius:5px; cursor:pointer;">➕ Загрузить .js мод</button>
+            <button id="mod-refresh-btn" style="background:#204a87; border:none; color:white; padding:8px; border-radius:5px; cursor:pointer;">🔄 Обновить</button>
+            <button id="mod-share-btn" style="background:#a24e9a; border:none; color:white; padding:8px; border-radius:5px; cursor:pointer;">📤 Поделиться модами</button>
+        </div>
+        <div id="mod-list" style="overflow-y:auto; max-height:300px; display:flex; flex-direction:column; gap:5px;"></div>
+        <div style="margin-top:10px; padding:10px; background:#0f0f1f; border-radius:10px;">
+            <div style="color:#ffaa00; margin-bottom:5px;">🌐 Моды на сервере:</div>
+            <div id="server-mods-list" style="max-height:100px; overflow-y:auto;"></div>
+        </div>
+        <button id="mod-close-btn" style="margin-top:10px; background:#a40000; border:none; color:white; padding:8px; border-radius:5px; cursor:pointer;">✖️ Закрыть</button>
+    </div>
+
+    <input type="file" id="mod-input-file" accept=".js,application/javascript">
+
+    <div id="menu-overlay">
+        <div class="menu-container">
+            <div class="menu-title">🌍 TERRARIA</div>
+            <div class="menu-subtitle">Выберите режим игры</div>
+            
+            <button class="menu-button singleplayer" onclick="startSingleplayer()">👤 ОДИНОЧНАЯ ИГРА</button>
+            <button class="menu-button multiplayer" onclick="showMultiplayerMenu()">🌐 МУЛЬТИПЛЕЕР</button>
+        </div>
     </div>
 
     <div id="death-message">💀 ВЫ УМЕРЛИ 💀</div>
 
     <script>
-        // ---------- НАСТРОЙКИ ----------
+        // ============= ЯДРО МОДОВ (FORGE-STYLE) =============
+        const ModAPI = {
+            blocks: {},
+            items: {},
+            recipes: [],
+            entitySpawners: [],
+            hooks: {
+                preUpdate: [],
+                postUpdate: [],
+                onBlockBreak: [],
+                onBlockPlace: [],
+                onEntitySpawn: [],
+                onPlayerAttack: [],
+                onPlayerInteract: [],
+                onWorldGen: []
+            },
+
+            registerBlock(id, definition) {
+                this.blocks[id] = definition;
+                if (!window.BLOCKS) window.BLOCKS = {};
+                window.BLOCKS[id] = definition;
+                console.log(`[ModAPI] Блок ${id} зарегистрирован`);
+            },
+
+            registerItem(id, definition) {
+                this.items[id] = definition;
+                if (!window.ITEMS) window.ITEMS = {};
+                window.ITEMS[id] = definition;
+                console.log(`[ModAPI] Предмет ${id} зарегистрирован`);
+            },
+
+            addRecipe(recipe) {
+                this.recipes.push(recipe);
+                if (!window.recipes) window.recipes = [];
+                if (!window.advRecipes) window.advRecipes = [];
+                window.recipes.push(recipe);
+                window.advRecipes.push(recipe);
+                console.log(`[ModAPI] Рецепт ${recipe.id} добавлен`);
+            },
+
+            on(event, callback) {
+                if (!this.hooks[event]) this.hooks[event] = [];
+                this.hooks[event].push(callback);
+            },
+
+            trigger(event, data) {
+                if (this.hooks[event]) {
+                    for (let cb of this.hooks[event]) {
+                        try { cb(data); } catch (e) { console.error(`[ModAPI] Ошибка в хуке ${event}:`, e); }
+                    }
+                }
+            }
+        };
+
+        let loadedMods = [];
+        let serverMods = [];
+
+        // ============= ФУНКЦИИ ЗАГРУЗКИ МОДОВ =============
+        function loadModFromCode(code, filename, source = 'local') {
+            try {
+                const modFunction = new Function('ModAPI', code);
+                modFunction(ModAPI);
+                
+                // Проверяем, не загружен ли уже этот мод
+                const existingMod = loadedMods.find(m => m.name === filename);
+                if (existingMod) {
+                    console.log(`Мод ${filename} уже загружен, обновляем...`);
+                    existingMod.status = 'active';
+                    existingMod.error = null;
+                } else {
+                    loadedMods.push({ 
+                        name: filename, 
+                        status: 'active', 
+                        error: null,
+                        source: source,
+                        code: code // Сохраняем код для синхронизации
+                    });
+                }
+                
+                updateModListUI();
+                return true;
+            } catch (e) {
+                console.error(`[ModAPI] Ошибка загрузки мода ${filename}:`, e);
+                
+                const existingMod = loadedMods.find(m => m.name === filename);
+                if (existingMod) {
+                    existingMod.status = 'error';
+                    existingMod.error = e.message;
+                } else {
+                    loadedMods.push({ 
+                        name: filename, 
+                        status: 'error', 
+                        error: e.message,
+                        source: source,
+                        code: code
+                    });
+                }
+                
+                updateModListUI();
+                return false;
+            }
+        }
+
+        function loadModFromFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (loadModFromCode(e.target.result, file.name, 'local')) {
+                    // Если мы в мультиплеере, отправляем мод на сервер
+                    if (gameMode === 'multiplayer' && connected) {
+                        sendMessage('shareMod', {
+                            name: file.name,
+                            code: e.target.result
+                        });
+                        addChatMessage('system', `📤 Отправляем мод ${file.name} на сервер...`);
+                    }
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function unloadMod(index) {
+            loadedMods.splice(index, 1);
+            updateModListUI();
+            
+            // Предупреждаем, что нужна перезагрузка
+            if (gameMode === 'multiplayer' && connected) {
+                addChatMessage('system', '⚠️ Мод удалён. Перезагрузите игру для полной выгрузки.');
+            } else {
+                alert('Мод удалён из списка. Перезагрузите страницу, чтобы полностью выгрузить.');
+            }
+        }
+
+        function updateModListUI() {
+            const list = document.getElementById('mod-list');
+            list.innerHTML = '';
+            
+            loadedMods.forEach((mod, i) => {
+                const div = document.createElement('div');
+                div.className = 'mod-item';
+                div.innerHTML = `
+                    <div>
+                        <span class="mod-name">${mod.name}</span>
+                        <div class="mod-source">${mod.source === 'server' ? '📡 С сервера' : '💻 Локальный'}</div>
+                        <span class="${mod.status === 'active' ? 'mod-status' : 'mod-error'}">
+                            ${mod.status === 'active' ? '✅ Активен' : '❌ Ошибка: ' + (mod.error || '')}
+                        </span>
+                    </div>
+                    <div class="mod-actions">
+                        <button onclick="unloadMod(${i})">🗑️</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            // Обновляем список модов на сервере
+            const serverList = document.getElementById('server-mods-list');
+            if (serverList) {
+                serverList.innerHTML = '';
+                serverMods.forEach(mod => {
+                    const div = document.createElement('div');
+                    div.style.color = '#0f0';
+                    div.style.fontSize = '12px';
+                    div.style.padding = '2px 0';
+                    
+                    // Проверяем, загружен ли этот мод у нас
+                    const isLoaded = loadedMods.some(m => m.name === mod.name);
+                    div.innerHTML = `📦 ${mod.name} ${isLoaded ? '✅' : '⬇️'}`;
+                    div.style.cursor = 'pointer';
+                    div.onclick = () => downloadModFromServer(mod.name);
+                    serverList.appendChild(div);
+                });
+            }
+        }
+
+        // ============= СИНХРОНИЗАЦИЯ МОДОВ В МУЛЬТИПЛЕЕРЕ =============
+        function downloadModFromServer(modName) {
+            const mod = serverMods.find(m => m.name === modName);
+            if (mod && mod.code) {
+                if (loadModFromCode(mod.code, mod.name, 'server')) {
+                    addChatMessage('system', `✅ Мод ${modName} загружен с сервера!`);
+                    
+                    // Сохраняем мод локально
+                    const blob = new Blob([mod.code], { type: 'application/javascript' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = modName;
+                    a.click();
+                }
+            }
+        }
+
+        function shareAllMods() {
+            if (loadedMods.length === 0) {
+                alert('Нет модов для отправки');
+                return;
+            }
+            
+            loadedMods.forEach(mod => {
+                if (mod.code && mod.status === 'active') {
+                    sendMessage('shareMod', {
+                        name: mod.name,
+                        code: mod.code
+                    });
+                }
+            });
+            
+            addChatMessage('system', `📤 Отправлено ${loadedMods.length} модов на сервер`);
+        }
+
+        // ============= ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =============
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         document.body.appendChild(canvas);
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-
+        
         const BLOCK_SIZE = 40;
         const WORLD_WIDTH = 200;
         const WORLD_HEIGHT = 300;
 
-        // ---------- БЛОКИ ----------
+        // Режим игры
+        let gameMode = 'singleplayer';
+        let socket = null;
+        let playerId = null;
+        let otherPlayers = new Map();
+        let connected = false;
+
+        // Блоки (с лавой, обсидианом и т.д.)
         const BLOCKS = {
             0: { name: 'Воздух', color: 'transparent', solid: false, texture: '', miningPower: 0, drop: [] },
             1: { name: 'Земля', color: '#8B5A2B', solid: true, texture: '🟫', miningPower: 1, drop: [{id:1, count:1}] },
             2: { name: 'Трава', color: '#4CAF50', solid: true, texture: '🌿', miningPower: 1, drop: [{id:2, count:1}] },
             3: { name: 'Камень', color: '#808080', solid: true, texture: '🪨', miningPower: 2, drop: [{id:3, count:1}] },
             4: { name: 'Дерево', color: '#8B4513', solid: true, texture: '🪵', miningPower: 1, drop: [{id:4, count:1}] },
-            5: { name: 'Листва', color: '#2E7D32', solid: true, texture: '🍃', miningPower: 0.5, drop: [{id:4, count:1}] }, // дропает дерево
+            5: { name: 'Листва', color: '#2E7D32', solid: true, texture: '🍃', miningPower: 0.5, drop: [{id:4, count:1}] },
             6: { name: 'Песок', color: '#F4E542', solid: true, texture: '⏳', miningPower: 0.5, drop: [{id:6, count:1}], fall: true },
             7: { name: 'Железная руда', color: '#CD7F32', solid: true, texture: '⛰️', miningPower: 3, drop: [{id:21, count:1}] },
             8: { name: 'Глина', color: '#B87333', solid: true, texture: '🏺', miningPower: 1, drop: [{id:8, count:1}] },
@@ -319,9 +888,18 @@
             34: { name: 'Факел', color: '#FFA500', solid: false, texture: '🕯️', miningPower: 0, drop: [{id:34, count:1}] },
             35: { name: 'Медная руда', color: '#B87333', solid: true, texture: '🔶', miningPower: 2, drop: [{id:35, count:1}] },
             36: { name: 'Трава джунглей', color: '#228B22', solid: true, texture: '🌿', miningPower: 1, drop: [{id:36, count:1}] },
+            37: { name: 'Золотая руда', color: '#FFD700', solid: true, texture: '🪙', miningPower: 4, drop: [{id:37, count:1}] },
+            50: { name: 'Труба', color: '#A0A0A0', solid: false, texture: '🔧', miningPower: 2, drop: [{id:50, count:1}] },
+            // Лава
+            60: { name: 'Лава', color: '#FF4500', solid: false, texture: '🔥', miningPower: 0, drop: [], damage: 15, burn: true },
+            61: { name: 'Обсидиан', color: '#2C2C2C', solid: true, texture: '🪨', miningPower: 5, drop: [{id:61, count:1}] },
+            // Компьютерные блоки
+            1000: { name: 'Компьютер', color: '#2C3E50', solid: true, texture: '💻', miningPower: 2, drop: [{id:1000, count:1}] },
+            1001: { name: 'Монитор', color: '#34495E', solid: true, texture: '🖥️', miningPower: 1, drop: [{id:1001, count:1}] },
+            1002: { name: 'Клавиатура', color: '#7F8C8D', solid: true, texture: '⌨️', miningPower: 0.5, drop: [{id:1002, count:1}] }
         };
 
-        // ---------- ПРЕДМЕТЫ (ДОБАВЛЕНА РЫБА) ----------
+        // Предметы
         const ITEMS = {
             ...BLOCKS,
             12: { name: 'Семена пшеницы', color: '#8B4513', texture: '🌱', type: 'seed', cropBlock: 10, harvestBlock: 11, harvestItem: 13 },
@@ -332,6 +910,7 @@
             21: { name: 'Железная руда', color: '#CD7F32', texture: '⛰️', type: 'ore' },
             22: { name: 'Уголь', color: '#2C2C2C', texture: '⚫', type: 'fuel' },
             23: { name: 'Железный слиток', color: '#A0A0A0', texture: '🔩', type: 'material' },
+            24: { name: 'Золотой слиток', color: '#FFD700', texture: '🪙', type: 'material' },
             25: { name: 'Железный меч', color: '#A0A0A0', texture: '⚔️', type: 'tool', damage: 35 },
             26: { name: 'Железная кирка', color: '#A0A0A0', texture: '⛏️', type: 'tool', damage: 15, miningPower: 3, toolType: 'pickaxe' },
             27: { name: 'Дверь', color: '#8B4513', texture: '🚪', type: 'block' },
@@ -358,22 +937,43 @@
             50: { name: 'Железный нагрудник', texture: '👕', type: 'armor', armor: 4, slot: 'chest' },
             51: { name: 'Железные поножи', texture: '👖', type: 'armor', armor: 3, slot: 'leggings' },
             52: { name: 'Монета', texture: '🪙', type: 'currency' },
-            // Добавлена рыба
-            53: { name: 'Рыба', texture: '🐟', type: 'food', foodValue: 20 },
+            
+            // Рыбалка
+            53: { name: 'Рыба', texture: '🐟', type: 'food', foodValue: 25 },
+            54: { name: 'Золотая рыба', texture: '🐠', type: 'food', foodValue: 50 },
+            55: { name: 'Рыба-фугу', texture: '🐡', type: 'food', foodValue: 5, poison: true },
+            56: { name: 'Сундук с сокровищами', texture: '🧰', type: 'treasure' },
+            57: { name: 'Нить', texture: '🧵', type: 'material' },
+            58: { name: 'Удочка', texture: '🎣', type: 'fishingRod', power: 1 },
+            59: { name: 'Железная удочка', texture: '🎣', type: 'fishingRod', power: 2 },
+            60: { name: 'Золотая удочка', texture: '🎣', type: 'fishingRod', power: 3 },
+            
+            // Лава предметы
+            60: { name: 'Лава', texture: '🔥', type: 'liquid', damage: 15 },
+            61: { name: 'Обсидиан', texture: '🪨', type: 'block' },
+            62: { name: 'Ведро', texture: '🪣', type: 'tool', empty: true },
+            63: { name: 'Ведро воды', texture: '💧', type: 'tool', liquid: 'water' },
+            64: { name: 'Ведро лавы', texture: '🔥', type: 'tool', liquid: 'lava' },
+            
+            // Компьютерные предметы
+            1000: { name: 'Компьютер', texture: '💻', type: 'block' },
+            1001: { name: 'Монитор', texture: '🖥️', type: 'block' },
+            1002: { name: 'Клавиатура', texture: '⌨️', type: 'block' },
+            1003: { name: 'Процессор', texture: '⚙️', type: 'material' },
+            1004: { name: 'Оперативная память', texture: '🧠', type: 'material' },
+            1005: { name: 'Жёсткий диск', texture: '💾', type: 'material' }
         };
 
         // Инвентарь
         let inventory = [
             { id: 3, count: 10 },
             { id: 4, count: 5 },
-            { id: 13, count: 3 },
-            { id: 12, count: 2 },
+            { id: 30, count: 1 }, // Деревянная кирка
+            { id: 58, count: 1 }, // Удочка
+            { id: 62, count: 1 }, // Ведро
         ];
         let selectedSlot = 0;
         let coins = 0;
-
-        // Мир
-        let world = [];
 
         // Игрок
         let player = {
@@ -389,12 +989,19 @@
             maxHealth: 100,
             hunger: 100,
             maxHunger: 100,
-            armor: { helmet: null, chest: null, leggings: null },
-            hook: { active: false, x: 0, y: 0, target: null },
+            onFire: false,
+            fireTimer: 0,
+            name: 'Игрок'
         };
 
-        // Животные и монстры
-        let animals = [];
+        // Мир
+        let world = [];
+
+        // Жители деревень
+        let villagers = [];
+        let villages = [];
+
+        // Монстры
         let monsters = [];
 
         // Камера
@@ -409,6 +1016,8 @@
         let timeOfDay = 0.3;
         let dayCount = 1;
         let lastTimeUpdate = performance.now();
+        let gameTimeSeconds = 0;
+        let lastCoinUpdate = performance.now();
 
         // Меню
         let craftMenuOpen = false;
@@ -419,46 +1028,343 @@
         let dead = false;
         let deathTimer = 0;
 
-        // Печи и сундуки
-        let furnaces = {};
+        // Сундуки
         let chests = {};
 
-        // ---------- ГЕНЕРАЦИЯ МИРА ----------
+        // Трубы
+        let pipes = {};
+
+        // Рыбалка
+        let fishing = {
+            active: false,
+            rodX: 0,
+            rodY: 0,
+            timer: 0,
+            rodPower: 1
+        };
+
+        // ============= ФУНКЦИИ УПРАВЛЕНИЯ МЕНЮ =============
+        window.startSingleplayer = function() {
+            gameMode = 'singleplayer';
+            document.getElementById('menu-overlay').style.display = 'none';
+            document.getElementById('connection-status').style.display = 'none';
+            document.getElementById('chat-box').style.display = 'none';
+            document.getElementById('player-list').style.display = 'none';
+            
+            if (world.length === 0) {
+                generateWorld();
+            }
+            
+            startGame();
+        };
+
+        window.showMultiplayerMenu = function() {
+            const menu = document.querySelector('.menu-container');
+            menu.innerHTML = `
+                <div class="menu-title">🌐 МУЛЬТИПЛЕЕР</div>
+                <div class="menu-subtitle">Подключение к серверу</div>
+                
+                <label class="menu-label">Адрес сервера</label>
+                <input type="text" id="server-ip" class="menu-input" value="ws://localhost:8080" placeholder="ws://localhost:8080">
+                
+                <label class="menu-label">Ваше имя</label>
+                <input type="text" id="player-name" class="menu-input" value="Игрок_${Math.floor(Math.random() * 1000)}">
+                
+                <button class="menu-button multiplayer" onclick="connectToServer()">🔌 ПОДКЛЮЧИТЬСЯ</button>
+                <button class="menu-button back" onclick="backToMainMenu()">◀ НАЗАД</button>
+            `;
+        };
+
+        window.backToMainMenu = function() {
+            const menu = document.querySelector('.menu-container');
+            menu.innerHTML = `
+                <div class="menu-title">🌍 TERRARIA</div>
+                <div class="menu-subtitle">Выберите режим игры</div>
+                
+                <button class="menu-button singleplayer" onclick="startSingleplayer()">👤 ОДИНОЧНАЯ ИГРА</button>
+                <button class="menu-button multiplayer" onclick="showMultiplayerMenu()">🌐 МУЛЬТИПЛЕЕР</button>
+            `;
+        };
+
+        // ============= МУЛЬТИПЛЕЕРНЫЕ ФУНКЦИИ =============
+        window.connectToServer = function() {
+            const serverUrl = document.getElementById('server-ip').value;
+            const playerName = document.getElementById('player-name').value;
+            
+            player.name = playerName;
+            
+            try {
+                socket = new WebSocket(serverUrl);
+                
+                socket.onopen = () => {
+                    console.log('[MP] Подключено к серверу');
+                    connected = true;
+                    gameMode = 'multiplayer';
+                    
+                    document.getElementById('menu-overlay').style.display = 'none';
+                    document.getElementById('connection-status').style.display = 'block';
+                    document.getElementById('chat-box').style.display = 'flex';
+                    document.getElementById('player-list').style.display = 'block';
+                    
+                    if (world.length === 0) {
+                        generateWorld();
+                    }
+                    
+                    sendMessage('setName', { name: player.name });
+                    
+                    // Отправляем список наших модов на сервер
+                    setTimeout(() => {
+                        syncModsWithServer();
+                    }, 500);
+                    
+                    setTimeout(() => {
+                        sendFullWorld();
+                    }, 1000);
+                    
+                    startGame();
+                };
+                
+                socket.onmessage = (event) => {
+                    const msg = JSON.parse(event.data);
+                    handleServerMessage(msg);
+                };
+                
+                socket.onclose = () => {
+                    console.log('[MP] Отключено от сервера');
+                    connected = false;
+                    document.getElementById('connection-status').style.display = 'none';
+                    gameMode = 'singleplayer';
+                    document.getElementById('chat-box').style.display = 'none';
+                    document.getElementById('player-list').style.display = 'none';
+                    
+                    alert('Потеряно соединение с сервером. Вы переключены в одиночный режим.');
+                };
+                
+                socket.onerror = (err) => {
+                    console.error('[MP] Ошибка:', err);
+                    alert('Ошибка подключения к серверу');
+                };
+                
+            } catch (err) {
+                alert('Ошибка: ' + err.message);
+            }
+        };
+
+        function sendMessage(type, data) {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type, data }));
+            }
+        }
+
+        function sendFullWorld() {
+            if (!world) return;
+            
+            const worldData = {};
+            for (let y = 0; y < world.length; y++) {
+                for (let x = 0; x < world[y].length; x++) {
+                    if (world[y][x] !== 0) {
+                        worldData[`${x},${y}`] = world[y][x];
+                    }
+                }
+            }
+            
+            sendMessage('worldSync', worldData);
+        }
+
+        function syncModsWithServer() {
+            loadedMods.forEach(mod => {
+                if (mod.code && mod.status === 'active') {
+                    sendMessage('shareMod', {
+                        name: mod.name,
+                        code: mod.code
+                    });
+                }
+            });
+        }
+
+        function handleServerMessage(msg) {
+            switch(msg.type) {
+                case 'welcome':
+                    playerId = msg.data.id;
+                    addChatMessage('system', '✅ ' + msg.data.message);
+                    break;
+                    
+                case 'playerList':
+                    otherPlayers.clear();
+                    msg.data.forEach(p => {
+                        if (p.id !== playerId) {
+                            otherPlayers.set(p.id, p);
+                        }
+                    });
+                    updatePlayerList();
+                    break;
+                    
+                case 'playerJoined':
+                    otherPlayers.set(msg.data.id, msg.data);
+                    addChatMessage('system', `✨ ${msg.data.name} присоединился`);
+                    updatePlayerList();
+                    break;
+                    
+                case 'playerLeft':
+                    const leftPlayer = otherPlayers.get(msg.data.id);
+                    if (leftPlayer) {
+                        addChatMessage('system', `👋 ${leftPlayer.name} покинул игру`);
+                        otherPlayers.delete(msg.data.id);
+                    }
+                    updatePlayerList();
+                    break;
+                    
+                case 'playerMoved':
+                    const playerData = otherPlayers.get(msg.data.id);
+                    if (playerData) {
+                        playerData.x = msg.data.x;
+                        playerData.y = msg.data.y;
+                        playerData.health = msg.data.health;
+                        playerData.direction = msg.data.direction;
+                    }
+                    break;
+                    
+                case 'chat':
+                    addChatMessage(msg.data.playerName, msg.data.message);
+                    break;
+                    
+                case 'blockUpdate':
+                    if (world && world[msg.data.y] && world[msg.data.y][msg.data.x] !== undefined) {
+                        world[msg.data.y][msg.data.x] = msg.data.blockId;
+                    }
+                    break;
+                    
+                case 'fullWorldSync':
+                    applyWorldSync(msg.data);
+                    break;
+                    
+                case 'modList':
+                    serverMods = msg.data;
+                    updateModListUI();
+                    addChatMessage('system', `📦 На сервере ${serverMods.length} модов`);
+                    break;
+                    
+                case 'modShared':
+                    const mod = msg.data;
+                    
+                    // Проверяем, есть ли уже такой мод
+                    const existingMod = serverMods.find(m => m.name === mod.name);
+                    if (existingMod) {
+                        existingMod.code = mod.code;
+                    } else {
+                        serverMods.push(mod);
+                    }
+                    
+                    updateModListUI();
+                    addChatMessage('system', `📥 Новый мод на сервере: ${mod.name}`);
+                    
+                    // Если это мод от другого игрока, предлагаем скачать
+                    if (msg.data.playerId !== playerId) {
+                        if (confirm(`Мод ${mod.name} доступен на сервере. Скачать?`)) {
+                            downloadModFromServer(mod.name);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        function applyWorldSync(worldData) {
+            if (!world) return;
+            
+            Object.keys(worldData).forEach(key => {
+                const [x, y] = key.split(',').map(Number);
+                const blockId = worldData[key];
+                if (world[y] && world[y][x] !== undefined) {
+                    world[y][x] = blockId;
+                }
+            });
+            
+            addChatMessage('system', '✅ Мир синхронизирован');
+        }
+
+        function addChatMessage(sender, text) {
+            const messages = document.getElementById('chat-messages');
+            if (!messages) return;
+            
+            const div = document.createElement('div');
+            div.style.marginBottom = '3px';
+            div.style.wordBreak = 'break-word';
+            
+            if (sender === 'system') {
+                div.style.color = '#ff0';
+                div.innerHTML = `⚡ ${text}`;
+            } else {
+                div.innerHTML = `<span style="color:#0f0;">${sender}:</span> ${text}`;
+            }
+            
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+            
+            if (messages.children.length > 50) {
+                messages.removeChild(messages.firstChild);
+            }
+        }
+
+        function updatePlayerList() {
+            const list = document.getElementById('player-list-content');
+            if (!list) return;
+            
+            let html = '';
+            html += `<div style="color:#0ff;">● ${player.name} (Вы)</div>`;
+            
+            otherPlayers.forEach(p => {
+                html += `<div style="color:#0f0;">● ${p.name}</div>`;
+            });
+            
+            list.innerHTML = html;
+        }
+
+        // ============= ОСНОВНЫЕ ФУНКЦИИ ИГРЫ =============
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
         function generateWorld() {
             for (let y = 0; y < WORLD_HEIGHT; y++) {
                 world[y] = [];
                 for (let x = 0; x < WORLD_WIDTH; x++) {
                     let surfaceHeight = 30 + Math.sin(x * 0.05) * 5 + Math.cos(x * 0.03) * 3;
-                    let biome = 'plains';
-                    if (x > 120 && x < 160) biome = 'desert';
-                    if (x > 40 && x < 80) biome = 'jungle';
-
+                    
                     if (y < surfaceHeight - 2) {
                         world[y][x] = 0;
                     } else if (y < surfaceHeight) {
-                        if (biome === 'desert') world[y][x] = 31;
-                        else if (biome === 'jungle') world[y][x] = 36;
-                        else world[y][x] = 2;
-                    } else if (y < surfaceHeight + 5) {
-                        if (biome === 'desert') world[y][x] = 31;
-                        else if (biome === 'jungle') world[y][x] = 1;
-                        else world[y][x] = 1;
+                        if (Math.abs(x) % 70 > 60) {
+                            world[y][x] = 31;
+                        } else if (Math.abs(x) % 40 > 35) {
+                            world[y][x] = 36;
+                        } else {
+                            world[y][x] = 2;
+                        }
+                    } else if (y < surfaceHeight + 4) {
+                        world[y][x] = 1;
                     } else if (y < surfaceHeight + 15) {
-                        if (Math.random() < 0.2) world[y][x] = 8;
-                        else if (Math.random() < 0.15) world[y][x] = 9;
+                        let r = Math.random();
+                        if (r < 0.2) world[y][x] = 8;
+                        else if (r < 0.35) world[y][x] = 9;
                         else world[y][x] = 3;
                     } else {
                         let r = Math.random();
-                        if (r < 0.02 && y > surfaceHeight + 30) world[y][x] = 7;
+                        if (r < 0.02) world[y][x] = 7;
                         else if (r < 0.04) world[y][x] = 22;
                         else if (r < 0.06) world[y][x] = 35;
+                        else if (r < 0.07) world[y][x] = 37;
+                        else if (r < 0.08 && y > surfaceHeight + 30) world[y][x] = 60;
                         else world[y][x] = 3;
                     }
                 }
             }
+            
             // Деревья
             for (let x = 5; x < WORLD_WIDTH-5; x++) {
-                if (Math.random() < 0.1) {
+                if (Math.random() < 0.15) {
                     for (let y = 20; y < 40; y++) {
                         if (world[y][x] === 2 && world[y-1][x] === 0) {
                             for (let h = 1; h <= 4; h++) if (y-h >=0) world[y-h][x] = 4;
@@ -472,22 +1378,8 @@
                     }
                 }
             }
-            // Кактусы
-            for (let x = 5; x < WORLD_WIDTH-5; x++) {
-                if (world[30][x] === 31 && Math.random() < 0.05) {
-                    world[29][x] = 32;
-                    world[28][x] = 32;
-                    world[27][x] = 32;
-                }
-            }
-            // Лианы
-            for (let x = 5; x < WORLD_WIDTH-5; x++) {
-                if (world[30][x] === 36 && Math.random() < 0.1) {
-                    world[29][x] = 33;
-                    world[28][x] = 33;
-                }
-            }
-            // Озёра
+            
+            // Озёра воды
             for (let i = 0; i < 5; i++) {
                 let lakeX = Math.floor(Math.random() * (WORLD_WIDTH - 20)) + 10;
                 let lakeY = 30 + Math.floor(Math.random() * 5);
@@ -503,23 +1395,128 @@
                     }
                 }
             }
-            // Сундуки с сокровищами
-            for (let i = 0; i < 10; i++) {
-                let x = Math.floor(Math.random() * (WORLD_WIDTH - 2)) + 1;
-                let y = Math.floor(Math.random() * 40) + 20;
-                if (world[y][x] === 0 && (world[y+1][x] === 1 || world[y+1][x] === 2 || world[y+1][x] === 3)) {
-                    world[y][x] = 29;
-                    let key = x + '_' + y;
-                    chests[key] = [
-                        { id: 52, count: Math.floor(Math.random()*10)+5 },
-                        { id: 35, count: Math.floor(Math.random()*5)+1 },
-                    ];
+            
+            // Озёра лавы глубоко
+            for (let i = 0; i < 3; i++) {
+                let lavaX = Math.floor(Math.random() * (WORLD_WIDTH - 10)) + 5;
+                let lavaY = 50 + Math.floor(Math.random() * 20);
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        let x = lavaX + dx;
+                        let y = lavaY + dy;
+                        if (x >= 0 && x < WORLD_WIDTH && y >= 0 && y < WORLD_HEIGHT) {
+                            if (world[y][x] === 3) {
+                                world[y][x] = 60;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Генерируем деревни
+            setTimeout(() => {
+                for (let i = 0; i < 3; i++) {
+                    let x = 50 + Math.floor((Math.random() - 0.5) * 80);
+                    let y = 30;
+                    generateVillage(x, y);
+                }
+            }, 500);
+        }
+
+        // Генерация деревни
+        function generateVillage(centerX, centerY) {
+            console.log("🏘️ Генерируем деревню в", centerX, centerY);
+            
+            let groundY = centerY;
+            for (let y = centerY; y < centerY + 10; y++) {
+                if (world[y] && (world[y][centerX] === 2 || world[y][centerX] === 1)) {
+                    groundY = y;
+                    break;
+                }
+            }
+            
+            villages.push({
+                x: centerX,
+                y: groundY,
+                houses: []
+            });
+            
+            for (let i = 0; i < 3 + Math.floor(Math.random() * 4); i++) {
+                let houseX = centerX + (i - 1) * 8;
+                let houseY = groundY - 3;
+                
+                if (houseX >= 0 && houseX + 5 < WORLD_WIDTH && houseY >= 0 && houseY + 4 < WORLD_HEIGHT) {
+                    // Пол
+                    for (let dx = 0; dx < 5; dx++) {
+                        world[houseY][houseX + dx] = 4;
+                    }
+                    
+                    // Стены
+                    for (let dx = 0; dx < 5; dx++) {
+                        for (let dy = 1; dy < 4; dy++) {
+                            if (dx === 0 || dx === 4 || dy === 3) {
+                                world[houseY + dy][houseX + dx] = 4;
+                            } else {
+                                world[houseY + dy][houseX + dx] = 0;
+                            }
+                        }
+                    }
+                    
+                    // Дверь
+                    world[houseY + 1][houseX + 2] = 27;
+                    
+                    // Крыша
+                    for (let dx = -1; dx < 6; dx++) {
+                        if (houseY - 1 >= 0 && houseX + dx >= 0 && houseX + dx < WORLD_WIDTH) {
+                            world[houseY - 1][houseX + dx] = 4;
+                        }
+                    }
+                    
+                    // Житель
+                    let villager = {
+                        x: (houseX + 2) * BLOCK_SIZE,
+                        y: (houseY + 2) * BLOCK_SIZE,
+                        homeX: houseX,
+                        homeY: houseY,
+                        type: 'villager',
+                        name: ['Торговец', 'Кузнец', 'Фермер', 'Рыбак'][Math.floor(Math.random() * 4)],
+                        trades: generateTrades(),
+                        wanderTimer: 0,
+                        wanderX: 0
+                    };
+                    villagers.push(villager);
                 }
             }
         }
-        generateWorld();
 
-        // ---------- ИНВЕНТАРЬ ----------
+        function generateTrades() {
+            let trades = [];
+            let possibleTrades = [
+                { sellId: 52, sellCount: 5, buyId: 13, buyCount: 3 },
+                { sellId: 52, sellCount: 10, buyId: 23, buyCount: 1 },
+                { sellId: 52, sellCount: 8, buyId: 53, buyCount: 1 },
+                { sellId: 52, sellCount: 20, buyId: 25, buyCount: 1 },
+                { sellId: 52, sellCount: 15, buyId: 26, buyCount: 1 },
+                { sellId: 52, sellCount: 8, buyId: 18, buyCount: 1 },
+                { sellId: 52, sellCount: 15, buyId: 59, buyCount: 1 },
+                { sellId: 52, sellCount: 30, buyId: 60, buyCount: 1 },
+            ];
+            
+            for (let i = 0; i < 4; i++) {
+                trades.push(possibleTrades[Math.floor(Math.random() * possibleTrades.length)]);
+            }
+            return trades;
+        }
+
+        function startGame() {
+            if (!window.gameLoopStarted) {
+                window.gameLoopStarted = true;
+                setInterval(gameLoop, 1000/60);
+                draw();
+            }
+        }
+
+        // ============= ИНВЕНТАРЬ =============
         function updateInventoryUI() {
             const hotbar = document.getElementById('hotbar');
             hotbar.innerHTML = '';
@@ -542,7 +1539,6 @@
             }
             document.getElementById('coin-counter').innerHTML = `🪙 ${coins}`;
         }
-        updateInventoryUI();
 
         function selectSlot(index) { selectedSlot = index; updateInventoryUI(); }
 
@@ -589,13 +1585,7 @@
             return true;
         }
 
-        function hasItem(id, count = 1) {
-            if (id === 52) return coins >= count;
-            for (let item of inventory) if (item.id === id && item.count >= count) return true;
-            return false;
-        }
-
-        // ---------- КРАФТ ----------
+        // ============= КРАФТ =============
         const recipes = [
             { id: 15, items: [{id:3, count:3}, {id:4, count:1}], resultCount: 1 },
             { id: 19, items: [{id:4, count:5}], resultCount: 1 },
@@ -604,15 +1594,11 @@
             { id: 29, items: [{id:4, count:8}], resultCount: 1 },
             { id: 31, items: [{id:3, count:3}], resultCount: 1 },
             { id: 40, items: [{id:3, count:3}], resultCount: 1 },
-            { id: 50, items: [{id:4, count:5}], resultCount: 1 }, // удочка
+            { id: 58, items: [{id:4, count:5}, {id:57, count:2}], resultCount: 1 },
             { id: 18, items: [{id:13, count:3}], resultCount: 1 },
             { id: 34, items: [{id:22, count:1}, {id:4, count:1}], resultCount: 3 },
-            { id: 38, items: [{id:37, count:3}, {id:4, count:2}], resultCount: 1 },
-            { id: 39, items: [{id:37, count:3}, {id:4, count:1}], resultCount: 1 },
-            { id: 42, items: [{id:4, count:3}, {id:23, count:1}], resultCount: 1 },
-            { id: 43, items: [{id:4, count:3}, {id:14, count:1}], resultCount: 1 },
-            { id: 44, items: [{id:3, count:1}, {id:4, count:1}], resultCount: 5 },
-            { id: 45, items: [{id:23, count:3}, {id:4, count:2}], resultCount: 1 },
+            { id: 62, items: [{id:23, count:3}], resultCount: 1 },
+            { id: 57, items: [{id:2, count:3}], resultCount: 2 },
         ];
 
         const advRecipes = [
@@ -620,12 +1606,18 @@
             { id: 25, items: [{id:23, count:3}, {id:4, count:1}], resultCount: 1 },
             { id: 26, items: [{id:23, count:3}, {id:4, count:2}], resultCount: 1 },
             { id: 41, items: [{id:23, count:3}, {id:4, count:2}], resultCount: 1 },
-            { id: 46, items: [{id:37, count:5}], resultCount: 1 },
-            { id: 47, items: [{id:37, count:8}], resultCount: 1 },
-            { id: 48, items: [{id:37, count:6}], resultCount: 1 },
-            { id: 49, items: [{id:23, count:5}], resultCount: 1 },
-            { id: 50, items: [{id:23, count:8}], resultCount: 1 },
-            { id: 51, items: [{id:23, count:6}], resultCount: 1 },
+            { id: 1003, items: [{id:23, count:3}, {id:22, count:2}, {id:8, count:1}], resultCount: 1 },
+            { id: 1004, items: [{id:37, count:2}, {id:22, count:1}], resultCount: 2 },
+            { id: 1005, items: [{id:23, count:2}, {id:8, count:2}], resultCount: 1 },
+            { id: 1001, items: [{id:3, count:2}, {id:23, count:1}, {id:4, count:2}], resultCount: 1 },
+            { id: 1002, items: [{id:4, count:3}, {id:52, count:5}], resultCount: 1 },
+            { id: 1000, items: [{id:1003, count:1}, {id:1004, count:2}, {id:1005, count:1}, {id:1001, count:1}, {id:1002, count:1}], resultCount: 1 },
+            { id: 50, items: [{id:23, count:3}], resultCount: 6 },
+            { id: 63, items: [{id:62, count:1}, {id:30, count:1}], resultCount: 1 },
+            { id: 64, items: [{id:62, count:1}, {id:60, count:1}], resultCount: 1 },
+            { id: 61, items: [{id:30, count:1}, {id:60, count:1}], resultCount: 2 },
+            { id: 59, items: [{id:23, count:3}, {id:57, count:3}], resultCount: 1 },
+            { id: 60, items: [{id:24, count:3}, {id:57, count:5}], resultCount: 1 },
         ];
 
         function craftItem(recipe) {
@@ -635,50 +1627,7 @@
             return true;
         }
 
-        // Привязка кнопок
-        document.getElementById('craft-sword').onclick = () => craftItem(recipes[0]);
-        document.getElementById('craft-workbench').onclick = () => craftItem(recipes[1]);
-        document.getElementById('craft-woodpickaxe').onclick = () => craftItem(recipes[2]);
-        document.getElementById('craft-door').onclick = () => craftItem(recipes[3]);
-        document.getElementById('craft-chest').onclick = () => craftItem(recipes[4]);
-        document.getElementById('craft-stonepickaxe').onclick = () => craftItem(recipes[5]);
-        document.getElementById('craft-stoneaxe').onclick = () => craftItem(recipes[6]);
-        document.getElementById('craft-fishingrod').onclick = () => craftItem(recipes[7]);
-        document.getElementById('craft-bread').onclick = () => craftItem(recipes[8]);
-        document.getElementById('craft-torch').onclick = () => craftItem(recipes[9]);
-        document.getElementById('craft-copperpickaxe').onclick = () => craftItem(recipes[10]);
-        document.getElementById('craft-coppersword').onclick = () => craftItem(recipes[11]);
-        document.getElementById('craft-boomerang').onclick = () => craftItem(recipes[12]);
-        document.getElementById('craft-bow').onclick = () => craftItem(recipes[13]);
-        document.getElementById('craft-arrow').onclick = () => craftItem(recipes[14]);
-        document.getElementById('craft-hook').onclick = () => craftItem(recipes[15]);
-
-        document.getElementById('craft-furnace').onclick = () => craftItem(advRecipes[0]);
-        document.getElementById('craft-iron-sword').onclick = () => craftItem(advRecipes[1]);
-        document.getElementById('craft-iron-pickaxe').onclick = () => craftItem(advRecipes[2]);
-        document.getElementById('craft-iron-axe').onclick = () => craftItem(advRecipes[3]);
-        document.getElementById('craft-copper-helmet').onclick = () => craftItem(advRecipes[4]);
-        document.getElementById('craft-copper-chest').onclick = () => craftItem(advRecipes[5]);
-        document.getElementById('craft-copper-leggings').onclick = () => craftItem(advRecipes[6]);
-        document.getElementById('craft-iron-helmet').onclick = () => craftItem(advRecipes[7]);
-        document.getElementById('craft-iron-chest').onclick = () => craftItem(advRecipes[8]);
-        document.getElementById('craft-iron-leggings').onclick = () => craftItem(advRecipes[9]);
-
-        // Плавка
-        document.getElementById('smelt-iron').onclick = () => {
-            if (hasItems([{id:21, count:1}, {id:22, count:1}])) {
-                removeItem(21,1); removeItem(22,1);
-                addItem(23,1);
-            }
-        };
-        document.getElementById('smelt-copper').onclick = () => {
-            if (hasItems([{id:35, count:1}, {id:22, count:1}])) {
-                removeItem(35,1); removeItem(22,1);
-                addItem(37,1);
-            }
-        };
-
-        // ---------- ВРЕМЯ ----------
+        // ============= ВРЕМЯ =============
         function updateTime() {
             let now = performance.now();
             let delta = (now - lastTimeUpdate) / 60000;
@@ -686,9 +1635,24 @@
             timeOfDay += delta * 1.0;
             if (timeOfDay >= 1) { timeOfDay = 0; dayCount++; }
             document.getElementById('clock').innerHTML = (timeOfDay < 0.5 ? '☀️' : '🌙') + ' День ' + dayCount;
+            
+            let timeDelta = (now - lastCoinUpdate) / 1000;
+            if (timeDelta >= 1) {
+                gameTimeSeconds += timeDelta;
+                lastCoinUpdate = now;
+                
+                if (Math.floor(gameTimeSeconds / 60) > Math.floor((gameTimeSeconds - timeDelta) / 60)) {
+                    coins++;
+                    updateInventoryUI();
+                }
+                
+                let minutes = Math.floor(gameTimeSeconds / 60);
+                let seconds = Math.floor(gameTimeSeconds % 60);
+                document.getElementById('play-time').innerHTML = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
         }
 
-        // ---------- ГОЛОД ----------
+        // ============= ГОЛОД =============
         function updateHunger() {
             if (dead) return;
             player.hunger -= 0.002;
@@ -702,12 +1666,14 @@
             document.getElementById('hunger-fill').style.width = (player.hunger / player.maxHunger) * 100 + '%';
         }
 
-        // ---------- СМЕРТЬ ----------
+        // ============= СМЕРТЬ =============
         function checkDeath() {
             if (!dead && player.health <= 0) {
                 dead = true;
                 deathTimer = 120;
                 document.getElementById('death-message').style.display = 'block';
+                player.onFire = false;
+                document.getElementById('burn-effect').style.display = 'none';
             }
             if (dead) {
                 deathTimer--;
@@ -723,21 +1689,20 @@
             }
         }
 
-        // ---------- ЕДА ----------
+        // ============= ЕДА =============
         function eatFood(itemId) {
             let foodItem = ITEMS[itemId];
             if (foodItem && foodItem.type === 'food') {
                 if (removeItem(itemId, 1)) {
                     player.hunger = Math.min(player.hunger + foodItem.foodValue, player.maxHunger);
+                    if (foodItem.poison) {
+                        player.health -= 10;
+                    }
                 }
             }
         }
 
-        // ---------- МОНСТРЫ ----------
-        function spawnAnimal(x, y, type = 'cow') {
-            animals.push({ x, y, vx:0, vy:0, width:30, height:30, onGround:false, type, health:20, readyToBreed:0 });
-        }
-
+        // ============= МОНСТРЫ =============
         function spawnMonster(x, y, type) {
             let mob = { 
                 x, y, vx:0, vy:0, width:28, height:40, onGround:false,
@@ -759,7 +1724,9 @@
                 for (let xx = left; xx <= right; xx++) {
                     if (xx >= 0 && xx < WORLD_WIDTH && yy >= 0 && yy < WORLD_HEIGHT) {
                         let block = world[yy][xx];
-                        if (block !== 0 && BLOCKS[block].solid) return false;
+                        if (block !== 0 && BLOCKS[block] && BLOCKS[block].solid) {
+                            if (block !== 30 && block !== 60) return false;
+                        }
                     }
                 }
             }
@@ -800,7 +1767,36 @@
             }
         }
 
-        // ---------- ФИЗИКА ИГРОКА ----------
+        function updateAllMobs() {
+            for (let m of monsters) {
+                updateMob(m, player.x, player.y, true);
+            }
+        }
+
+        function spawnMobs() {
+            if (dead) return;
+            if (timeOfDay > 0.6 && timeOfDay < 0.9 && monsters.length < 10) {
+                if (Math.random() < 0.015) {
+                    let angle = Math.random() * 2*Math.PI;
+                    let dist = 500;
+                    let x = player.x + Math.cos(angle) * dist;
+                    let y = player.y + Math.sin(angle) * dist;
+                    let bx = Math.floor(x / BLOCK_SIZE);
+                    let by = Math.floor(y / BLOCK_SIZE);
+                    if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
+                        for (let yy = by; yy < WORLD_HEIGHT; yy++) {
+                            if (world[yy] && world[yy][bx] !== 0 && world[yy][bx] !== undefined) {
+                                let type = Math.random() < 0.5 ? 'zombie' : 'slime';
+                                spawnMonster(bx * BLOCK_SIZE, yy * BLOCK_SIZE - 40, type);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // ============= ФИЗИКА ИГРОКА =============
         function canMovePlayer(x, y) {
             let left = Math.floor(x / BLOCK_SIZE);
             let right = Math.floor((x + player.width) / BLOCK_SIZE);
@@ -810,7 +1806,9 @@
                 for (let xx = left; xx <= right; xx++) {
                     if (xx >= 0 && xx < WORLD_WIDTH && yy >= 0 && yy < WORLD_HEIGHT) {
                         let block = world[yy][xx];
-                        if (block !== 0 && BLOCKS[block].solid) return false;
+                        if (block !== 0 && BLOCKS[block] && BLOCKS[block].solid) {
+                            if (block !== 30 && block !== 60) return false;
+                        }
                     }
                 }
             }
@@ -841,9 +1839,215 @@
             camera.y = player.y - canvas.height/2;
             camera.x = Math.max(0, Math.min(camera.x, WORLD_WIDTH*BLOCK_SIZE - canvas.width));
             camera.y = Math.max(0, Math.min(camera.y, WORLD_HEIGHT*BLOCK_SIZE - canvas.height));
+            
+            let blockX = Math.floor(player.x / BLOCK_SIZE);
+            let blockY = Math.floor(player.y / BLOCK_SIZE);
+            document.getElementById('coordinates').innerHTML = `📍 X: ${blockX}, Y: ${blockY}`;
         }
 
-        // ---------- ВЗАИМОДЕЙСТВИЕ (ИСПРАВЛЕНА РЫБАЛКА) ----------
+        // ============= ЖИТЕЛИ =============
+        function updateVillagers() {
+            for (let v of villagers) {
+                v.wanderTimer--;
+                if (v.wanderTimer <= 0) {
+                    v.wanderTimer = 60 + Math.floor(Math.random() * 120);
+                    v.wanderX = (Math.random() - 0.5) * 50;
+                }
+                
+                let targetX = v.homeX * BLOCK_SIZE + 20 + v.wanderX;
+                let dx = targetX - v.x;
+                v.x += Math.sign(dx) * 0.3;
+                
+                let groundY = v.homeY * BLOCK_SIZE + 20;
+                if (v.y < groundY) v.y += 1;
+                if (v.y > groundY) v.y = groundY;
+            }
+        }
+
+        // ============= ТРУБЫ =============
+        function updatePipes() {
+            for (let key in pipes) {
+                let pipe = pipes[key];
+                if (pipe.waterSource && pipe.direction) {
+                    let [x, y] = key.split('_').map(Number);
+                    
+                    let waterFound = false;
+                    for (let dx = -1; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            if (dx === 0 && dy === 0) continue;
+                            let checkX = x + dx;
+                            let checkY = y + dy;
+                            if (checkX >= 0 && checkX < WORLD_WIDTH && checkY >= 0 && checkY < WORLD_HEIGHT) {
+                                let block = world[checkY][checkX];
+                                if (block === 30 || block === 60) {
+                                    waterFound = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (waterFound && Math.random() < 0.1) {
+                        let targetX = x + pipe.direction.x;
+                        let targetY = y + pipe.direction.y;
+                        if (targetX >= 0 && targetX < WORLD_WIDTH && targetY >= 0 && targetY < WORLD_HEIGHT && world[targetY][targetX] === 0) {
+                            world[targetY][targetX] = 30;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ============= ЛАВА =============
+        function updateLiquids() {
+            for (let y = WORLD_HEIGHT - 1; y >= 0; y--) {
+                for (let x = 0; x < WORLD_WIDTH; x++) {
+                    let block = world[y][x];
+                    if (block === 30 || block === 60) {
+                        if (y + 1 < WORLD_HEIGHT && world[y + 1][x] === 0) {
+                            world[y + 1][x] = block;
+                            world[y][x] = 0;
+                        }
+                        
+                        if (block === 30) {
+                            for (let dx = -1; dx <= 1; dx++) {
+                                for (let dy = -1; dy <= 1; dy++) {
+                                    if (dx === 0 && dy === 0) continue;
+                                    let checkX = x + dx;
+                                    let checkY = y + dy;
+                                    if (checkX >= 0 && checkX < WORLD_WIDTH && checkY >= 0 && checkY < WORLD_HEIGHT) {
+                                        if (world[checkY][checkX] === 60) {
+                                            world[checkY][checkX] = 61;
+                                            world[y][x] = 0;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function checkFireDamage() {
+            if (dead) return;
+            
+            let playerBlockX = Math.floor(player.x / BLOCK_SIZE);
+            let playerBlockY = Math.floor(player.y / BLOCK_SIZE);
+            if (playerBlockX >= 0 && playerBlockX < WORLD_WIDTH && playerBlockY >= 0 && playerBlockY < WORLD_HEIGHT) {
+                let blockAtFeet = world[playerBlockY][playerBlockX];
+                let blockAtHead = playerBlockY - 1 >= 0 ? world[playerBlockY - 1][playerBlockX] : 0;
+                
+                if (blockAtFeet === 60 || blockAtHead === 60) {
+                    player.onFire = true;
+                    player.fireTimer = 100;
+                }
+            }
+            
+            if (player.onFire) {
+                player.health -= 0.5;
+                player.fireTimer--;
+                document.getElementById('burn-effect').style.display = 'block';
+                
+                if (player.fireTimer <= 0) {
+                    player.onFire = false;
+                    document.getElementById('burn-effect').style.display = 'none';
+                }
+            } else {
+                document.getElementById('burn-effect').style.display = 'none';
+            }
+            
+            for (let i = monsters.length - 1; i >= 0; i--) {
+                let m = monsters[i];
+                let mobX = Math.floor(m.x / BLOCK_SIZE);
+                let mobY = Math.floor(m.y / BLOCK_SIZE);
+                if (mobX >= 0 && mobX < WORLD_WIDTH && mobY >= 0 && mobY < WORLD_HEIGHT && world[mobY][mobX] === 60) {
+                    m.health -= 2;
+                    if (m.health <= 0) {
+                        monsters.splice(i, 1);
+                    }
+                }
+            }
+        }
+
+        // ============= РЫБАЛКА =============
+        function startFishing(rodPower) {
+            if (fishing.active) return;
+            
+            let targetBlock = world[mouseBlockY][mouseBlockX];
+            if (targetBlock !== 30 && targetBlock !== 60) {
+                alert("🎣 Нужно смотреть на воду или лаву!");
+                return false;
+            }
+            
+            fishing.active = true;
+            fishing.rodX = mouseWorldX;
+            fishing.rodY = mouseWorldY;
+            fishing.timer = 100 + Math.random() * 100;
+            fishing.rodPower = rodPower;
+            
+            let bobber = document.getElementById('fishing-bobber');
+            bobber.style.display = 'block';
+            bobber.style.left = mouseX + 'px';
+            bobber.style.top = mouseY + 'px';
+            bobber.classList.add('fishing-active');
+            
+            return true;
+        }
+
+        function updateFishing() {
+            if (!fishing.active) return;
+            
+            let bobber = document.getElementById('fishing-bobber');
+            let screenX = fishing.rodX - camera.x;
+            let screenY = fishing.rodY - camera.y;
+            bobber.style.left = screenX + 'px';
+            bobber.style.top = screenY + 'px';
+            
+            fishing.timer--;
+            
+            if (fishing.timer <= 0) {
+                finishFishing();
+            }
+            
+            if (keys['escape']) {
+                cancelFishing();
+            }
+        }
+
+        function finishFishing() {
+            if (!fishing.active) return;
+            
+            fishing.active = false;
+            document.getElementById('fishing-bobber').style.display = 'none';
+            document.getElementById('fishing-bobber').classList.remove('fishing-active');
+            
+            let targetBlock = world[mouseBlockY][mouseBlockX];
+            let fish = 53;
+            
+            if (targetBlock === 60) {
+                fish = Math.random() < 0.3 ? 61 : 53;
+            }
+            
+            let rand = Math.random();
+            if (rand < 0.1 * fishing.rodPower) {
+                fish = 54;
+            } else if (rand < 0.15) {
+                fish = 55;
+            } else if (rand < 0.05 * fishing.rodPower) {
+                fish = 56;
+            }
+            
+            addItem(fish, 1);
+        }
+
+        function cancelFishing() {
+            fishing.active = false;
+            document.getElementById('fishing-bobber').style.display = 'none';
+            document.getElementById('fishing-bobber').classList.remove('fishing-active');
+        }
+
+        // ============= ВЗАИМОДЕЙСТВИЕ =============
         function handleInput() {
             if (dead) return;
 
@@ -860,17 +2064,19 @@
                         m.health -= dmg;
                         if (m.health <= 0) {
                             monsters.splice(i,1);
-                            addItem(14, 1); // мясо
+                            addItem(14, 1);
                         }
                         attacked = true;
                         break;
                     }
                 }
+                
                 if (!attacked && mouseBlockX>=0 && mouseBlockX<WORLD_WIDTH && mouseBlockY>=0 && mouseBlockY<WORLD_HEIGHT) {
                     let block = world[mouseBlockY][mouseBlockX];
                     if (block !== 0) {
-                        // Смерть без кирки для камня/руды
-                        let hardBlocks = [3,7,22,35];
+                        ModAPI.trigger('onBlockBreak', { x: mouseBlockX, y: mouseBlockY, block, player });
+                        
+                        let hardBlocks = [3,7,22,35,37,61];
                         if (hardBlocks.includes(block)) {
                             let sel = inventory[selectedSlot];
                             let hasPickaxe = sel && ITEMS[sel.id] && ITEMS[sel.id].toolType === 'pickaxe';
@@ -880,7 +2086,6 @@
                                 return;
                             }
                         }
-                        // Сундук
                         if (block === 29) {
                             let key = mouseBlockX + '_' + mouseBlockY;
                             if (chests[key]) {
@@ -888,16 +2093,25 @@
                                 delete chests[key];
                             }
                         }
-                        // Сбор урожая
                         if (block === 11) {
                             addItem(13, 1);
                             if (Math.random() < 0.2) addItem(12, 1);
                             world[mouseBlockY][mouseBlockX] = 0;
-                        } else if (block !== 30) { // воду не ломаем
+                        } else if (block !== 30 && block !== 60) {
                             if (block === 2 && Math.random() < 0.2) addItem(12, 1);
-                            let drops = BLOCKS[block].drop;
+                            if (block === 2 && Math.random() < 0.1) addItem(57, 1);
+                            let drops = BLOCKS[block].drop || [];
                             for (let d of drops) addItem(d.id, d.count);
                             world[mouseBlockY][mouseBlockX] = 0;
+                        }
+                        
+                        if (gameMode === 'multiplayer' && connected) {
+                            sendMessage('blockUpdate', {
+                                x: mouseBlockX,
+                                y: mouseBlockY,
+                                blockId: 0,
+                                action: 'break'
+                            });
                         }
                     }
                 }
@@ -908,32 +2122,49 @@
                 let sel = inventory[selectedSlot];
                 if (mouseBlockX>=0 && mouseBlockX<WORLD_WIDTH && mouseBlockY>=0 && mouseBlockY<WORLD_HEIGHT) {
                     let targetBlock = world[mouseBlockY][mouseBlockX];
-                    // Дверь
+                    ModAPI.trigger('onPlayerInteract', { x: mouseBlockX, y: mouseBlockY, block: targetBlock, item: sel });
+
+                    for (let v of villagers) {
+                        let vbx = Math.floor(v.x / BLOCK_SIZE);
+                        let vby = Math.floor(v.y / BLOCK_SIZE);
+                        if (Math.abs(vbx - mouseBlockX) < 2 && Math.abs(vby - mouseBlockY) < 2) {
+                            // Торговля (можно добавить позже)
+                            mouseDown.right = false;
+                            return;
+                        }
+                    }
+
+                    if (targetBlock === 1000) {
+                        alert('💻 Компьютер: Добро пожаловать!');
+                        mouseDown.right = false;
+                        return;
+                    }
+
+                    if (targetBlock === 50) {
+                        let key = mouseBlockX + '_' + mouseBlockY;
+                        if (!pipes[key]) {
+                            let dir = prompt("Направление (up/down/left/right):");
+                            let direction = { x:0, y:0 };
+                            if (dir === 'up') direction.y = -1;
+                            else if (dir === 'down') direction.y = 1;
+                            else if (dir === 'left') direction.x = -1;
+                            else if (dir === 'right') direction.x = 1;
+                            
+                            pipes[key] = {
+                                waterSource: true,
+                                direction: direction
+                            };
+                        }
+                        mouseDown.right = false;
+                        return;
+                    }
+
                     if (targetBlock === 27 || targetBlock === 28) {
                         world[mouseBlockY][mouseBlockX] = targetBlock === 27 ? 28 : 27;
                         mouseDown.right = false;
                         return;
                     }
-                    // Сундук
-                    if (targetBlock === 29) {
-                        let key = mouseBlockX + '_' + mouseBlockY;
-                        if (!chests[key]) chests[key] = [];
-                        if (!sel) {
-                            if (chests[key].length > 0) {
-                                let item = chests[key].shift();
-                                addItem(item.id, item.count);
-                            }
-                        } else {
-                            if (removeItem(sel.id, 1)) {
-                                let found = chests[key].find(i => i.id === sel.id);
-                                if (found) found.count++;
-                                else chests[key].push({ id: sel.id, count: 1 });
-                            }
-                        }
-                        mouseDown.right = false;
-                        return;
-                    }
-                    // Верстак
+                    
                     if (targetBlock === 19) {
                         let dist = Math.hypot(mouseWorldX - player.x, mouseWorldY - player.y);
                         if (dist < 60) {
@@ -944,22 +2175,11 @@
                         mouseDown.right = false;
                         return;
                     }
-                    // Печь
+                    
                     if (targetBlock === 20) {
                         furnaceMenuOpen = !furnaceMenuOpen;
                         document.getElementById('furnace-menu').style.display = furnaceMenuOpen ? 'flex' : 'none';
                         if (furnaceMenuOpen) { craftMenuOpen = false; document.getElementById('craft-menu').style.display = 'none'; advCraftMenuOpen = false; document.getElementById('adv-craft-menu').style.display = 'none'; }
-                        mouseDown.right = false;
-                        return;
-                    }
-                    // Рыбалка (исправлено: добавлена рыба)
-                    if (targetBlock === 30 && sel && ITEMS[sel.id] && ITEMS[sel.id].fishing) {
-                        if (Math.random() < 0.3) {
-                            addItem(53, 1); // ID рыбы 53
-                            console.log('Вы поймали рыбу!');
-                        } else {
-                            console.log('Рыба сорвалась...');
-                        }
                         mouseDown.right = false;
                         return;
                     }
@@ -968,6 +2188,11 @@
                 if (sel) {
                     let item = ITEMS[sel.id];
                     if (item.type === 'food') eatFood(sel.id);
+                    else if (item.type === 'fishingRod') {
+                        startFishing(item.power || 1);
+                        mouseDown.right = false;
+                        return;
+                    }
                     else if (item.type === 'seed') {
                         if (mouseBlockY+1 < WORLD_HEIGHT && (world[mouseBlockY][mouseBlockX] === 1 || world[mouseBlockY][mouseBlockX] === 2)) {
                             if (removeItem(sel.id, 1)) {
@@ -975,10 +2200,43 @@
                                 setTimeout(() => { if (world[mouseBlockY][mouseBlockX] === 10) world[mouseBlockY][mouseBlockX] = 11; }, 10000);
                             }
                         }
+                    } else if (sel.id === 63) {
+                        if (world[mouseBlockY][mouseBlockX] === 0) {
+                            world[mouseBlockY][mouseBlockX] = 30;
+                            removeItem(63, 1);
+                            addItem(62, 1);
+                        }
+                    } else if (sel.id === 64) {
+                        if (world[mouseBlockY][mouseBlockX] === 0) {
+                            world[mouseBlockY][mouseBlockX] = 60;
+                            removeItem(64, 1);
+                            addItem(62, 1);
+                        }
+                    } else if (sel.id === 62) {
+                        let targetBlock = world[mouseBlockY][mouseBlockX];
+                        if (targetBlock === 30) {
+                            world[mouseBlockY][mouseBlockX] = 0;
+                            removeItem(62, 1);
+                            addItem(63, 1);
+                        } else if (targetBlock === 60) {
+                            world[mouseBlockY][mouseBlockX] = 0;
+                            removeItem(62, 1);
+                            addItem(64, 1);
+                        }
                     } else if (item.type === 'block' || (sel.id in BLOCKS && BLOCKS[sel.id].solid)) {
                         if (world[mouseBlockY][mouseBlockX] === 0) {
                             world[mouseBlockY][mouseBlockX] = sel.id;
+                            ModAPI.trigger('onBlockPlace', { x: mouseBlockX, y: mouseBlockY, block: sel.id, player });
                             removeItem(sel.id, 1);
+                            
+                            if (gameMode === 'multiplayer' && connected) {
+                                sendMessage('blockUpdate', {
+                                    x: mouseBlockX,
+                                    y: mouseBlockY,
+                                    blockId: sel.id,
+                                    action: 'place'
+                                });
+                            }
                         }
                     }
                 }
@@ -986,38 +2244,7 @@
             }
         }
 
-        // ---------- СПАВН МОНСТРОВ ----------
-        function spawnMobs() {
-            if (dead) return;
-            if (timeOfDay > 0.6 && timeOfDay < 0.9 && monsters.length < 10) {
-                if (Math.random() < 0.015) {
-                    let angle = Math.random() * 2*Math.PI;
-                    let dist = 500;
-                    let x = player.x + Math.cos(angle) * dist;
-                    let y = player.y + Math.sin(angle) * dist;
-                    let by = Math.floor(y / BLOCK_SIZE);
-                    for (let yy = by; yy < WORLD_HEIGHT; yy++) {
-                        if (world[yy][Math.floor(x/BLOCK_SIZE)] !== 0) {
-                            let type = Math.random() < 0.5 ? 'zombie' : 'slime';
-                            spawnMonster(x, yy * BLOCK_SIZE - 40, type);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        // ---------- ОБНОВЛЕНИЕ МОБОВ ----------
-        function updateAllMobs() {
-            for (let a of animals) {
-                updateMob(a, a.x + (Math.random()-0.5)*100, a.y, false);
-            }
-            for (let m of monsters) {
-                updateMob(m, player.x, player.y, true);
-            }
-        }
-
-        // ---------- ОТРИСОВКА ----------
+        // ============= ОТРИСОВКА =============
         function draw() {
             let skyColor = timeOfDay < 0.5 ? '#87CEEB' : '#0a1a2a';
             ctx.fillStyle = skyColor;
@@ -1025,7 +2252,6 @@
             ctx.save();
             ctx.translate(-camera.x, -camera.y);
 
-            // Блоки
             for (let y = Math.floor(camera.y/BLOCK_SIZE)-2; y < Math.floor((camera.y+canvas.height)/BLOCK_SIZE)+2; y++) {
                 for (let x = Math.floor(camera.x/BLOCK_SIZE)-2; x < Math.floor((camera.x+canvas.width)/BLOCK_SIZE)+2; x++) {
                     if (x>=0 && x<WORLD_WIDTH && y>=0 && y<WORLD_HEIGHT) {
@@ -1044,18 +2270,19 @@
                 }
             }
 
-            // Животные
-            for (let a of animals) {
+            for (let v of villagers) {
                 ctx.fillStyle = '#8B4513';
                 ctx.beginPath();
-                ctx.ellipse(a.x + 15, a.y - 10, 15, 10, 0, 0, Math.PI*2);
+                ctx.ellipse(v.x + 15, v.y - 10, 15, 10, 0, 0, Math.PI*2);
                 ctx.fill();
                 ctx.fillStyle = '#FFF';
                 ctx.font = '20px Arial';
-                ctx.fillText('🐮', a.x, a.y-30);
+                ctx.fillText('👨', v.x, v.y-30);
+                ctx.font = '12px Arial';
+                ctx.fillStyle = '#FFD700';
+                ctx.fillText(v.name, v.x-15, v.y-45);
             }
 
-            // Монстры
             for (let m of monsters) {
                 ctx.fillStyle = m.type === 'slime' ? '#0F0' : '#2a5';
                 ctx.beginPath();
@@ -1070,8 +2297,26 @@
                 ctx.fillText(m.type === 'slime' ? '👾' : '🧟', m.x, m.y-35);
             }
 
-            // Игрок
-            ctx.fillStyle = '#4ECDC4';
+            if (gameMode === 'multiplayer') {
+                otherPlayers.forEach(p => {
+                    ctx.fillStyle = '#FF69B4';
+                    ctx.fillRect(p.x, p.y, 28, 42);
+                    
+                    ctx.fillStyle = '#F0E68C';
+                    ctx.beginPath();
+                    ctx.arc(p.x + 14, p.y - 5, 12, 0, 2*Math.PI);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = 'white';
+                    ctx.font = '12px Arial';
+                    ctx.shadowColor = 'black';
+                    ctx.shadowBlur = 3;
+                    ctx.fillText(p.name, p.x - 5, p.y - 25);
+                    ctx.shadowBlur = 0;
+                });
+            }
+
+            ctx.fillStyle = player.onFire ? '#FF4500' : '#4ECDC4';
             ctx.fillRect(player.x, player.y, player.width, player.height);
             ctx.fillStyle = '#F0E68C';
             ctx.beginPath();
@@ -1082,58 +2327,103 @@
             ctx.arc(player.x + player.width/2 - 4, player.y - 9, 2, 0, 2*Math.PI);
             ctx.arc(player.x + player.width/2 + 4, player.y - 9, 2, 0, 2*Math.PI);
             ctx.fill();
-            ctx.fillStyle = '#4ECDC4';
-            ctx.fillRect(player.x - 5, player.y + 5, 5, 15);
-            ctx.fillRect(player.x + player.width, player.y + 5, 5, 15);
-            ctx.fillRect(player.x + 3, player.y + player.height, 8, 10);
-            ctx.fillRect(player.x + player.width - 11, player.y + player.height, 8, 10);
-
-            // Оружие
-            let selItem = inventory[selectedSlot];
-            if (selItem && ITEMS[selItem.id] && ITEMS[selItem.id].type === 'tool' && !ITEMS[selItem.id].fishing) {
-                ctx.strokeStyle = '#A52A2A';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(player.x + player.width + 5, player.y + 10);
-                ctx.lineTo(player.x + player.width + 20, player.y - 5);
-                ctx.stroke();
-            }
 
             ctx.restore();
-
             requestAnimationFrame(draw);
         }
 
-        // ---------- СОХРАНЕНИЕ/ЗАГРУЗКА ----------
+        // ============= СОХРАНЕНИЕ/ЗАГРУЗКА =============
         function saveGame() {
             let save = {
-                world, inventory, player: { x:player.x, y:player.y, health:player.health, hunger:player.hunger, dayCount, timeOfDay, armor:player.armor },
-                animals, monsters, furnaces, chests, coins,
+                world, inventory, player: { x:player.x, y:player.y, health:player.health, hunger:player.hunger, dayCount, timeOfDay },
+                villagers, villages, monsters, chests, pipes, coins, gameTimeSeconds,
+                mods: loadedMods.map(m => ({ name: m.name, code: m.code }))
             };
-            localStorage.setItem('terrariaSave', JSON.stringify(save));
-            alert('Игра сохранена');
+            localStorage.setItem('terrariaModSave', JSON.stringify(save));
+            alert('Игра и моды сохранены');
         }
 
         function loadGame() {
-            let save = JSON.parse(localStorage.getItem('terrariaSave'));
+            let save = JSON.parse(localStorage.getItem('terrariaModSave'));
             if (save) {
                 world = save.world; inventory = save.inventory;
                 player.x = save.player.x; player.y = save.player.y;
                 player.health = save.player.health; player.hunger = save.player.hunger;
                 dayCount = save.dayCount; timeOfDay = save.timeOfDay;
-                player.armor = save.player.armor || { helmet: null, chest: null, leggings: null };
-                animals = save.animals || []; monsters = save.monsters || [];
-                furnaces = save.furnaces || {}; chests = save.chests || {};
+                villagers = save.villagers || [];
+                villages = save.villages || [];
+                monsters = save.monsters || [];
+                chests = save.chests || {};
+                pipes = save.pipes || {};
                 coins = save.coins || 0;
+                gameTimeSeconds = save.gameTimeSeconds || 0;
+                
+                // Загружаем моды
+                if (save.mods) {
+                    save.mods.forEach(m => {
+                        loadModFromCode(m.code, m.name, 'local');
+                    });
+                }
+                
                 updateInventoryUI();
+                alert('Игра и моды загружены');
             }
         }
 
         document.getElementById('btn-save').onclick = saveGame;
         document.getElementById('btn-load').onclick = loadGame;
 
-        // ---------- ГЛАВНЫЙ ЦИКЛ ----------
+        // ============= ЧАТ =============
+        document.getElementById('chat-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && gameMode === 'multiplayer' && connected) {
+                const text = e.target.value.trim();
+                if (text) {
+                    sendMessage('chat', { text });
+                    addChatMessage(player.name, text);
+                    e.target.value = '';
+                }
+            }
+        });
+
+        // ============= УПРАВЛЕНИЕ МОДАМИ =============
+        document.getElementById('mod-manager-btn').onclick = () => {
+            document.getElementById('mod-panel').style.display = 'flex';
+            updateModListUI();
+        };
+        
+        document.getElementById('mod-close-btn').onclick = () => {
+            document.getElementById('mod-panel').style.display = 'none';
+        };
+        
+        document.getElementById('mod-add-btn').onclick = () => {
+            document.getElementById('mod-input-file').click();
+        };
+        
+        document.getElementById('mod-refresh-btn').onclick = () => {
+            updateModListUI();
+        };
+        
+        document.getElementById('mod-share-btn').onclick = () => {
+            if (gameMode === 'multiplayer' && connected) {
+                shareAllMods();
+            } else {
+                alert('Эта функция доступна только в мультиплеере');
+            }
+        };
+        
+        document.getElementById('mod-input-file').addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                loadModFromFile(e.target.files[0]);
+                e.target.value = '';
+            }
+        });
+
+        // ============= ГЛАВНЫЙ ЦИКЛ =============
         function gameLoop() {
+            if (world.length === 0) return;
+            
+            ModAPI.trigger('preUpdate', { player, world, animals: [], monsters });
+            
             updateTime();
             updateHunger();
             checkDeath();
@@ -1141,17 +2431,94 @@
                 updatePlayer();
                 handleInput();
                 updateAllMobs();
+                updateVillagers();
+                updatePipes();
+                updateLiquids();
+                checkFireDamage();
+                updateFishing();
                 spawnMobs();
+                
+                if (gameMode === 'multiplayer' && connected) {
+                    sendMessage('playerUpdate', {
+                        x: player.x,
+                        y: player.y,
+                        health: player.health,
+                        direction: player.direction
+                    });
+                }
             }
-            document.getElementById('debug').innerHTML = `Монстров: ${monsters.length}`;
+            
+            ModAPI.trigger('postUpdate', { player, world, animals: [], monsters });
+            
+            document.getElementById('debug').innerHTML = `Монстров: ${monsters.length} | Жителей: ${villagers.length} | Модов: ${loadedMods.length}`;
         }
-        setInterval(gameLoop, 1000/60);
-        draw();
 
-        // Начальные животные
-        for (let i=0; i<3; i++) spawnAnimal(60*BLOCK_SIZE + i*60, 25*BLOCK_SIZE, 'cow');
+        // Привязка кнопок крафта
+        document.getElementById('craft-sword').onclick = () => craftItem(recipes[0]);
+        document.getElementById('craft-workbench').onclick = () => craftItem(recipes[1]);
+        document.getElementById('craft-woodpickaxe').onclick = () => craftItem(recipes[2]);
+        document.getElementById('craft-door').onclick = () => craftItem(recipes[3]);
+        document.getElementById('craft-chest').onclick = () => craftItem(recipes[4]);
+        document.getElementById('craft-stonepickaxe').onclick = () => craftItem(recipes[5]);
+        document.getElementById('craft-stoneaxe').onclick = () => craftItem(recipes[6]);
+        document.getElementById('craft-fishingrod').onclick = () => craftItem(recipes[7]);
+        document.getElementById('craft-bread').onclick = () => craftItem(recipes[8]);
+        document.getElementById('craft-torch').onclick = () => craftItem(recipes[9]);
+        document.getElementById('craft-bucket').onclick = () => craftItem(recipes[10]);
 
-        // Управление меню
+        document.getElementById('craft-furnace').onclick = () => craftItem(advRecipes[0]);
+        document.getElementById('craft-iron-sword').onclick = () => craftItem(advRecipes[1]);
+        document.getElementById('craft-iron-pickaxe').onclick = () => craftItem(advRecipes[2]);
+        document.getElementById('craft-iron-axe').onclick = () => craftItem(advRecipes[3]);
+        document.getElementById('craft-cpu').onclick = () => craftItem(advRecipes[4]);
+        document.getElementById('craft-ram').onclick = () => craftItem(advRecipes[5]);
+        document.getElementById('craft-hdd').onclick = () => craftItem(advRecipes[6]);
+        document.getElementById('craft-monitor').onclick = () => craftItem(advRecipes[7]);
+        document.getElementById('craft-keyboard').onclick = () => craftItem(advRecipes[8]);
+        document.getElementById('craft-computer').onclick = () => craftItem(advRecipes[9]);
+        document.getElementById('craft-pipe').onclick = () => craftItem(advRecipes[10]);
+        
+        setTimeout(() => {
+            if (document.getElementById('craft-lava-bucket')) {
+                document.getElementById('craft-lava-bucket').onclick = () => craftItem(advRecipes[11]);
+            }
+            if (document.getElementById('craft-obsidian')) {
+                document.getElementById('craft-obsidian').onclick = () => craftItem(advRecipes[12]);
+            }
+            if (document.getElementById('craft-fishing-rod-iron')) {
+                document.getElementById('craft-fishing-rod-iron').onclick = () => craftItem(advRecipes[13]);
+            }
+            if (document.getElementById('craft-fishing-rod-golden')) {
+                document.getElementById('craft-fishing-rod-golden').onclick = () => craftItem(advRecipes[14]);
+            }
+        }, 100);
+
+        document.getElementById('smelt-iron').onclick = () => {
+            if (hasItems([{id:21, count:1}, {id:22, count:1}])) {
+                removeItem(21,1); removeItem(22,1);
+                addItem(23,1);
+            }
+        };
+        document.getElementById('smelt-copper').onclick = () => {
+            if (hasItems([{id:35, count:1}, {id:22, count:1}])) {
+                removeItem(35,1); removeItem(22,1);
+                addItem(37,1);
+            }
+        };
+        document.getElementById('smelt-glass').onclick = () => {
+            if (hasItems([{id:6, count:1}, {id:22, count:1}])) {
+                removeItem(6,1); removeItem(22,1);
+                addItem(3, 2);
+            }
+        };
+        document.getElementById('smelt-gold').onclick = () => {
+            if (hasItems([{id:37, count:1}, {id:22, count:2}])) {
+                removeItem(37,1); removeItem(22,2);
+                addItem(24,1);
+            }
+        };
+
+        // Управление
         window.addEventListener('keydown', (e) => {
             let k = e.key.toLowerCase();
             keys[k] = true;
@@ -1172,7 +2539,14 @@
                     advCraftMenuOpen = false; document.getElementById('adv-craft-menu').style.display = 'none';
                 }
             }
+            if (k === 'c') {
+                if (fishing.active) cancelFishing();
+            }
+            if (k === ' ') {
+                e.preventDefault();
+            }
         });
+
         window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
 
         canvas.addEventListener('mousemove', (e) => {
@@ -1189,7 +2563,35 @@
         canvas.addEventListener('mouseup', (e) => { if (e.button===0) mouseDown.left=false; if (e.button===2) mouseDown.right=false; });
         canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-        console.log('Исправлено: рыбалка работает, рыба добавляется в инвентарь');
+        // Исправление фокуса кнопок
+        (function fixButtonFocus() {
+            function disableButtonFocus() {
+                document.querySelectorAll('button').forEach(btn => {
+                    btn.setAttribute('tabindex', '-1');
+                    btn.addEventListener('mousedown', (e) => e.preventDefault());
+                });
+            }
+            document.addEventListener('keydown', (e) => {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (window.player && !window.dead) {
+                        window.player.vy = -window.player.jumpPower;
+                        window.player.onGround = false;
+                    }
+                }
+            }, true);
+            const observer = new MutationObserver(() => {
+                document.querySelectorAll('button:not([tabindex="-1"])').forEach(btn => {
+                    btn.setAttribute('tabindex', '-1');
+                });
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+            disableButtonFocus();
+        })();
+
+        // Инициализация
+        updateInventoryUI();
+        draw();
     </script>
 </body>
 </html>
