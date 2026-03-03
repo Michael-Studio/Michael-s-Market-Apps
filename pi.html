@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Подпольная империя · Сбалансированная</title>
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Courier New', monospace;
+        }
+        body{
+            background:linear-gradient(135deg,#0a0f0f 0%,#1a2a2a 100%);
+            min-height:100vh;
+            padding:20px;
+        }
+        .sign{
+            background:linear-gradient(135deg,#000066,#0000cc);
+            border:4px solid #ff6600;
+            border-radius:15px;
+            padding:20px;
+            margin-bottom:30px;
+            text-align:center;
+            box-shadow:0 0 30px rgba(255,102,0,0.5);
+        }
+        .sign h1{
+            color:white;
+            font-size:3em;
+            text-shadow:3px 3px 0 #ff6600;
+        }
+        .company-name{
+            color:#0ff;
+            font-size:1.2em;
+            margin-top:5px;
+        }
+        .player-stats{
+            background:rgba(0,0,0,0.8);
+            border:2px solid #ff6600;
+            border-radius:10px;
+            padding:15px;
+            margin-bottom:20px;
+            display:flex;
+            justify-content:space-between;
+            color:white;
+            flex-wrap:wrap;
+            gap:10px;
+        }
+        .balance{color:#0f0;font-weight:bold;font-size:1.2em}
+        .rep{color:#ffaa00;font-weight:bold}
+        .nav-bar{
+            background:#1a1a1a;
+            border:2px solid #ff6600;
+            border-radius:10px;
+            padding:10px;
+            margin-bottom:20px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:5px;
+            min-height:60px;
+        }
+        .nav-btn{
+            background:#2a2a2a;
+            border:1px solid #ff6600;
+            color:#0ff;
+            padding:8px 12px;
+            cursor:pointer;
+            border-radius:5px;
+            flex:1 1 auto;
+            min-width:80px;
+            transition:0.3s;
+        }
+        .nav-btn:hover{
+            background:#ff6600;
+            color:#000;
+        }
+        .nav-btn.shop{
+            background:#006600;
+            border-color:#0f0;
+            color:#0f0;
+        }
+        .nav-btn.shop:hover{
+            background:#0f0;
+            color:#000;
+        }
+        .content{
+            background:rgba(0,0,0,0.7);
+            border:2px solid #ff6600;
+            border-radius:10px;
+            padding:20px;
+            color:#fff;
+        }
+        .grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+            gap:10px;
+            margin-top:15px;
+        }
+        .card{
+            background:#1a1a1a;
+            border:1px solid #ff6600;
+            border-radius:8px;
+            padding:12px;
+            text-align:center;
+        }
+        .card.shop-card{
+            border-color:#0f0;
+            background:#030;
+        }
+        .card.event-card{
+            border-color:#ffaa00;
+            background:#320;
+            animation:pulse 2s infinite;
+        }
+        @keyframes pulse{
+            0%{box-shadow:0 0 5px #ffaa00}
+            50%{box-shadow:0 0 20px #ffaa00}
+            100%{box-shadow:0 0 5px #ffaa00}
+        }
+        .price{color:#0f0;font-weight:bold}
+        .item-count{color:#0ff}
+        button.action-btn{
+            background:#0ff;
+            color:#000;
+            border:none;
+            padding:6px 12px;
+            margin-top:8px;
+            cursor:pointer;
+            border-radius:4px;
+            width:100%;
+            font-weight:bold;
+        }
+        button.action-btn:hover{
+            background:#ff6600;
+        }
+        .hidden{display:none!important}
+        .notification{
+            position:fixed;
+            top:20px;
+            right:20px;
+            background:#1a1a1a;
+            border:2px solid #ff6600;
+            color:#fff;
+            padding:12px;
+            border-radius:5px;
+            z-index:1000;
+            animation:slideIn 0.3s;
+        }
+        @keyframes slideIn{
+            from{transform:translateX(100%);opacity:0}
+            to{transform:translateX(0);opacity:1}
+        }
+        .inventory-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+            gap:8px;
+            margin-top:8px;
+            max-height:300px;
+            overflow-y:auto;
+        }
+        .inventory-item{
+            background:#2a2a2a;
+            border:1px solid #0ff;
+            border-radius:5px;
+            padding:6px;
+            text-align:center;
+        }
+        .action-bar{
+            display:flex;
+            gap:8px;
+            margin-bottom:15px;
+            justify-content:flex-end;
+        }
+        .action-btn.small{
+            width:auto;
+            padding:6px 12px;
+        }
+        .timer{color:#ffaa00;font-size:0.8em;margin-top:4px}
+        .name-input{
+            background:#333;
+            border:1px solid #ff6600;
+            color:#fff;
+            padding:10px;
+            width:100%;
+            margin-bottom:10px;
+        }
+        .progress-bar{
+            width:100%;
+            height:20px;
+            background:#333;
+            border-radius:10px;
+            margin:10px 0;
+            overflow:hidden;
+        }
+        .progress-fill{
+            height:100%;
+            background:linear-gradient(90deg,#0f0,#ff0,#f00);
+            transition:width 0.3s;
+        }
+        .balance-info{
+            display:flex;
+            justify-content:space-around;
+            margin:10px 0;
+            padding:10px;
+            background:#1a1a1a;
+            border-radius:5px;
+        }
+    </style>
+</head>
+<body>
+<div class="sign">
+    <h1>ПОДПОЛЬНАЯ ИМПЕРИЯ</h1>
+    <div class="company-name" id="companyDisplay">⚡ Michael Market</div>
+</div>
+
+<!-- Экран названия компании -->
+<div id="nameScreen" class="content" style="max-width:500px;margin:0 auto">
+    <h3>🚀 НАЗВАНИЕ КОМПАНИИ</h3>
+    <input type="text" id="companyNameInput" class="name-input" placeholder="Введите название" value="Michael Market">
+    <button class="action-btn" onclick="setCompanyName()">НАЧАТЬ ИГРУ</button>
+</div>
+
+<!-- Основной интерфейс -->
+<div id="gameInterface" class="hidden">
+    <div class="player-stats">
+        <span>👤 <span id="companyNameHeader">Michael Market</span></span>
+        <span class="balance" id="currentBalance">5000 $</span>
+        <span class="rep" id="repBar">Авторитет: 0</span>
+    </div>
+
+    <!-- Балансовая информация -->
+    <div class="balance-info">
+        <span>💰 Доходы: <span id="totalIncome">0</span>$</span>
+        <span>📉 Расходы: <span id="totalExpenses">0</span>$</span>
+        <span>📊 Прибыль: <span id="netProfit">0</span>$</span>
+    </div>
+
+    <!-- Кнопки действий -->
+    <div class="action-bar">
+        <button class="action-btn small" onclick="saveGame()">💾 СОХРАНИТЬ</button>
+        <button class="action-btn small" onclick="loadGame()">📂 ЗАГРУЗИТЬ</button>
+        <button class="action-btn small" onclick="resetGame()">🔄 НОВАЯ ИГРА</button>
+    </div>
+
+    <!-- НАВИГАЦИЯ -->
+    <div class="nav-bar" id="navBar"></div>
+
+    <div class="content">
+        <!-- СОБЫТИЕ ДНЯ -->
+        <div id="eventBox" class="card event-card" style="margin-bottom:15px">
+            <h3 id="eventTitle">🎲 Событие дня</h3>
+            <p id="eventDesc">Загрузка...</p>
+        </div>
+
+        <!-- ========== БАЗОВЫЕ РАЗДЕЛЫ ========== -->
+        <!-- ФЕРМА -->
+        <div id="farm" class="section">
+            <h3>🌱 ФЕРМА</h3>
+            <div class="grid">
+                <div class="card"><h3>🌺 МАК</h3><p>30$</p><div class="item-count" id="makCount">0</div><button class="action-btn" onclick="plant('Мак',30)">ПОСАДИТЬ</button></div>
+                <div class="card"><h3>🌿 КОНОПЛЯ</h3><p>25$</p><div class="item-count" id="konoplyaCount">0</div><button class="action-btn" onclick="plant('Конопля',25)">ПОСАДИТЬ</button></div>
+                <div class="card"><h3>🌻 ПОДСОЛНУХ</h3><p>40$</p><div class="item-count" id="podsoCount">0</div><button class="action-btn" onclick="plant('Подсолнух',40)">ПОСАДИТЬ</button></div>
+                <div class="card"><h3>🌿 БАЗИЛИК</h3><p>35$</p><div class="item-count" id="bazilikCount">0</div><button class="action-btn" onclick="plant('Базилик',35)">ПОСАДИТЬ</button></div>
+                <div class="card"><h3>🌿 ЭВКАЛИПТ</h3><p>45$</p><div class="item-count" id="evkCount">0</div><button class="action-btn" onclick="plant('Эвкалипт',45)">ПОСАДИТЬ</button></div>
+                <div class="card"><h3>🍺 ХМЕЛЬ</h3><p>20$</p><div class="item-count" id="hmelCount">0</div><button class="action-btn" onclick="plant('Хмель',20)">ПОСАДИТЬ</button></div>
+                <div class="card"><h3>🍇 ВИНОГРАД</h3><p>35$</p><div class="item-count" id="vinogradCount">0</div><button class="action-btn" onclick="plant('Виноград',35)">ПОСАДИТЬ</button></div>
+                <div class="card"><h3>🌾 ПШЕНИЦА</h3><p>15$</p><div class="item-count" id="pshenicaCount">0</div><button class="action-btn" onclick="plant('Пшеница',15)">ПОСАДИТЬ</button></div>
+            </div>
+        </div>
+
+        <!-- ЖИВОТНЫЕ -->
+        <div id="animals" class="section hidden">
+            <h3>🐄 ЖИВОТНЫЕ</h3>
+            <div class="grid">
+                <div class="card"><h3>🐄 КОРОВА</h3><p>200$</p><div class="item-count" id="cowCount">0</div><button class="action-btn" onclick="buyAnimal('Корова',200)">КУПИТЬ</button><button class="action-btn" onclick="milkAllCows()">🥛 ПОДОИТЬ (25$)</button><div class="timer" id="milkTimer"></div><button class="action-btn" onclick="butcherAnimal('Корова',70)">🔪 ЗАБИТЬ (70$)</button></div>
+                <div class="card"><h3>🐔 КУРИЦА</h3><p>80$</p><div class="item-count" id="chickenCount">0</div><button class="action-btn" onclick="buyAnimal('Курица',80)">КУПИТЬ</button><button class="action-btn" onclick="collectEggs()">🥚 СОБРАТЬ (20$)</button><button class="action-btn" onclick="butcherAnimal('Курица',50)">🔪 ЗАБИТЬ (50$)</button></div>
+                <div class="card"><h3>🐑 ОВЦА</h3><p>150$</p><div class="item-count" id="sheepCount">0</div><button class="action-btn" onclick="buyAnimal('Овца',150)">КУПИТЬ</button><button class="action-btn" onclick="shearSheep()">✂️ ПОСТРИЧЬ (35$)</button><button class="action-btn" onclick="butcherAnimal('Овца',60)">🔪 ЗАБИТЬ (60$)</button></div>
+            </div>
+        </div>
+
+        <!-- ЛАБА -->
+        <div id="lab" class="section hidden">
+            <h3>⚗️ ЛАБОРАТОРИЯ</h3>
+            <div class="grid">
+                <div class="card"><h3>🫗 МАСЛО</h3><p>Подсолнух → 100$</p><button class="action-btn" onclick="produceReagent('Масло','Подсолнух')">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>💊 ЛЕКАРСТВО</h3><p>Эвкалипт → 150$</p><button class="action-btn" onclick="produceReagent('Лекарство','Эвкалипт')">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🧪 ОТВАР</h3><p>Мак → 120$</p><button class="action-btn" onclick="produceReagent('Отвар','Мак')">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🚬 ТАБАК</h3><p>Конопля → 90$</p><button class="action-btn" onclick="produceReagent('Табак','Конопля')">СДЕЛАТЬ</button></div>
+            </div>
+        </div>
+
+        <!-- ИНВЕНТАРЬ -->
+        <div id="inventory" class="section hidden">
+            <h3>📦 ИНВЕНТАРЬ</h3>
+            <div class="inventory-grid" id="inventoryList"></div>
+            <button class="action-btn" onclick="sellAll()">ПРОДАТЬ ВСЁ</button>
+        </div>
+
+        <!-- МАГАЗИН ВКЛАДОК -->
+        <div id="shop" class="section hidden">
+            <h3>🏪 МАГАЗИН ВКЛАДОК</h3>
+            <div class="grid">
+                <div class="card shop-card"><h3>🏭 ЗАВОД</h3><p>5 000$</p><p>Производство еды</p><button class="action-btn" onclick="buyTab('factory',5000)">КУПИТЬ</button></div>
+                <div class="card shop-card"><h3>📦 ПОЧТА</h3><p>10 000$</p><p>Упаковка и рейсы</p><button class="action-btn" onclick="buyTab('mail',10000)">КУПИТЬ</button></div>
+                <div class="card shop-card"><h3>🔫 ОРУЖИЕ</h3><p>20 000$</p><p>Теневой рынок</p><button class="action-btn" onclick="buyTab('weapon',20000)">КУПИТЬ</button></div>
+                <div class="card shop-card"><h3>🏦 ЛЕГАЛИЗАЦИЯ</h3><p>30 000$</p><p>Легальный бизнес</p><button class="action-btn" onclick="buyTab('legal',30000)">КУПИТЬ</button></div>
+                <div class="card shop-card"><h3>🚀 КОСМОС</h3><p>50 000$</p><p>Спутники и станции</p><button class="action-btn" onclick="buyTab('space',50000)">КУПИТЬ</button></div>
+                <div class="card shop-card"><h3>👑 АВТОРИТЕТ</h3><p>25 000$</p><p>Репутация</p><button class="action-btn" onclick="buyTab('reputation',25000)">КУПИТЬ</button></div>
+                <div class="card shop-card"><h3>🏆 ДОСТИЖЕНИЯ</h3><p>15 000$</p><p>Ачивки</p><button class="action-btn" onclick="buyTab('achievements',15000)">КУПИТЬ</button></div>
+                <div class="card shop-card"><h3>👨‍👦 СЕМЬЯ</h3><p>100 000$</p><p>Династия</p><button class="action-btn" onclick="buyTab('family',100000)">КУПИТЬ</button></div>
+            </div>
+        </div>
+
+        <!-- ЗАВОД -->
+        <div id="factory" class="section hidden">
+            <h3>🏭 ЗАВОД</h3>
+            <div class="grid">
+                <div class="card"><h3>🚬 СИГАРЫ</h3><p>Табак → 250$</p><button class="action-btn" onclick="produceSimple('Сигары','Табак')">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🌿 СПЕЦИИ</h3><p>Базилик → 80$</p><button class="action-btn" onclick="produceReagent('Специи','Базилик')">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🥩 МЯСО СО СПЕЦИЯМИ</h3><p>Мясо+Специи → 350$</p><button class="action-btn" onclick="produceSpicedMeat()">ПРИГОТОВИТЬ</button></div>
+                <div class="card"><h3>🍬 ИРИСКИ</h3><p>Масло+Молоко → 400$</p><button class="action-btn" onclick="produceFood('Ириски',{'Масло':1,'Молоко':1})">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🧀 СЫР</h3><p>Молоко x2 → 200$</p><button class="action-btn" onclick="produceFood('Сыр',{'Молоко':2})">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🥚 МАЙОНЕЗ</h3><p>Яйца x3 → 180$</p><button class="action-btn" onclick="produceFood('Майонез',{'Яйца':3})">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🍺 ПИВО</h3><p>Хмель x2 → 150$</p><button class="action-btn" onclick="produceFood('Пиво',{'Хмель':2})">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🍷 ВИНО</h3><p>Виноград x3 → 250$</p><button class="action-btn" onclick="produceFood('Вино',{'Виноград':3})">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🥃 ВИСКИ</h3><p>Пшеница x4 → 300$</p><button class="action-btn" onclick="produceFood('Виски',{'Пшеница':4})">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🍷 ВЫДЕРЖАННОЕ ВИНО</h3><p>1 мин → 600$</p><button class="action-btn" onclick="startAgedProduction('Вино','Выдержанное вино')">НАСТОЯТЬ</button></div>
+                <div class="card"><h3>🍷 КОЛЛЕКЦИОННОЕ ВИНО</h3><p>1 мин → 1200$</p><button class="action-btn" onclick="startAgedProduction('Выдержанное вино','Коллекционное вино')">ВЫДЕРЖАТЬ</button></div>
+                <div class="card"><h3>🥃 СОЛОДОВЫЙ ВИСКИ</h3><p>1 мин → 800$</p><button class="action-btn" onclick="startAgedProduction('Виски','Солодовый виски')">ВЫДЕРЖАТЬ</button></div>
+                <div class="card"><h3>🥃 18-ЛЕТНИЙ ВИСКИ</h3><p>1 мин → 1600$</p><button class="action-btn" onclick="startAgedProduction('Солодовый виски','18-летний виски')">ВЫДЕРЖАТЬ</button></div>
+                <div class="card"><h3>🍺 ЭЛЬ</h3><p>1 мин → 350$</p><button class="action-btn" onclick="startAgedProduction('Пиво','Эль')">СКВАСИТЬ</button></div>
+                <div class="card"><h3>🍺 ТЁМНЫЙ ЭЛЬ</h3><p>1 мин → 700$</p><button class="action-btn" onclick="startAgedProduction('Эль','Тёмный эль')">ВЫДЕРЖАТЬ</button></div>
+                <div class="card"><h3>🧀 ВЫДЕРЖАННЫЙ СЫР</h3><p>1 мин → 450$</p><button class="action-btn" onclick="startAgedProduction('Сыр','Выдержанный сыр')">ВЫДЕРЖАТЬ</button></div>
+                <div class="card"><h3>🧀 ГОЛУБОЙ СЫР</h3><p>1 мин → 900$</p><button class="action-btn" onclick="startAgedProduction('Выдержанный сыр','Голубой сыр')">ДОВЕСТИ</button></div>
+            </div>
+        </div>
+
+        <!-- ПОЧТА -->
+        <div id="mail" class="section hidden">
+            <h3>📦 ПОЧТОВАЯ СЛУЖБА</h3>
+            <div class="grid">
+                <div class="card"><h3>📦 УПАКОВАТЬ</h3><button class="action-btn" onclick="packAll()">УПАКОВАТЬ ВСЁ</button></div>
+                <div class="card"><h3>🚚 РЕЙС (x1.5)</h3><p>Риск 10%</p><button class="action-btn" onclick="transportOrder(1.5,0.1,500)">ОТПРАВИТЬ (500$)</button></div>
+                <div class="card"><h3>🚚 РЕЙС (x2)</h3><p>Риск 20%</p><button class="action-btn" onclick="transportOrder(2.0,0.2,1000)">ОТПРАВИТЬ (1000$)</button></div>
+                <div class="card"><h3>🚚 РЕЙС (x3)</h3><p>Риск 30%</p><button class="action-btn" onclick="transportOrder(3.0,0.3,2000)">ОТПРАВИТЬ (2000$)</button></div>
+            </div>
+        </div>
+
+        <!-- ОРУЖИЕ -->
+        <div id="weapon" class="section hidden">
+            <h3>🔫 ТЕНЕВОЙ РЫНОК</h3>
+            <div class="grid">
+                <div class="card"><h3>🔩 МЕТАЛЛОЛОМ</h3><p>10$</p><button class="action-btn" onclick="buyMetal()">КУПИТЬ</button></div>
+                <div class="card"><h3>⚙️ ДЕТАЛИ</h3><p>5 металла → 200$</p><button class="action-btn" onclick="produceDetails()">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🔫 ПИСТОЛЕТ</h3><p>10 деталей → 1000$</p><button class="action-btn" onclick="produceGun()">СДЕЛАТЬ</button></div>
+                <div class="card"><h3>🔫 АВТОМАТ</h3><p>20 деталей → 2500$</p><button class="action-btn" onclick="produceRifle()">СДЕЛАТЬ</button></div>
+            </div>
+        </div>
+
+        <!-- ЛЕГАЛИЗАЦИЯ -->
+        <div id="legal" class="section hidden">
+            <h3>🏦 ЛЕГАЛЬНЫЙ БИЗНЕС</h3>
+            <div class="grid">
+                <div class="card"><h3>☕ КАФЕ</h3><p>10 000$ → 100$/сек</p><button class="action-btn" onclick="buyBusiness('cafe',10000,100)">КУПИТЬ</button></div>
+                <div class="card"><h3>🧼 ПРАЧЕЧНАЯ</h3><p>25 000$ → 300$/сек</p><button class="action-btn" onclick="buyBusiness('laundry',25000,300)">КУПИТЬ</button></div>
+                <div class="card"><h3>🏨 ГОСТИНИЦА</h3><p>100 000$ → 1500$/сек</p><button class="action-btn" onclick="buyBusiness('hotel',100000,1500)">КУПИТЬ</button></div>
+            </div>
+            <div id="businessList"></div>
+        </div>
+
+        <!-- КОСМОС -->
+        <div id="space" class="section hidden">
+            <h3>🚀 КОСМИЧЕСКАЯ ПРОГРАММА</h3>
+            <div class="grid">
+                <div class="card"><h3>🛰️ СПУТНИК</h3><p>100 000$ → 500$/сек</p><button class="action-btn" onclick="buySatellite(100000,500)">ЗАПУСТИТЬ</button></div>
+                <div class="card"><h3>🛸 СТАНЦИЯ</h3><p>1 000 000$ → 5000$/сек</p><button class="action-btn" onclick="buyStation()">ПОСТРОИТЬ</button></div>
+                <div class="card"><h3>👽 ЛУННЫЙ КАМЕНЬ</h3><p>продажа 10 000$</p><div class="item-count" id="moonStoneCount">0</div></div>
+            </div>
+        </div>
+
+        <!-- АВТОРИТЕТ -->
+        <div id="reputation" class="section hidden">
+            <h3>👑 АВТОРИТЕТ</h3>
+            <div class="progress-bar"><div class="progress-fill" id="repProgress" style="width:0%"></div></div>
+            <p>Уровень: <span id="repLevel">1</span> (Авторитет: <span id="repValue">0</span>)</p>
+            <p>Скидка в магазине: <span id="repDiscount">0</span>%</p>
+            <button class="action-btn" onclick="donateMoney()">💰 ПОЖЕРТВОВАТЬ 10 000$ (+50 авторитета)</button>
+        </div>
+
+        <!-- ДОСТИЖЕНИЯ -->
+        <div id="achievements" class="section hidden">
+            <h3>🏆 ДОСТИЖЕНИЯ</h3>
+            <div class="grid">
+                <div class="card"><h3>🥉 НОВИЧОК</h3><p>Заработать 10 000$</p><p id="ach1Status">❌</p></div>
+                <div class="card"><h3>🚀 ИЛОН МАСК</h3><p>Запустить спутник</p><p id="ach2Status">❌</p></div>
+                <div class="card"><h3>💂 СПЕЦНАЗ</h3><p>Нанять 5+ солдат</p><p id="ach3Status">❌</p></div>
+                <div class="card"><h3>💰 МИЛЛИОНЕР</h3><p>Баланс 1 000 000$</p><p id="ach4Status">❌</p></div>
+                <div class="card"><h3>👑 КРИМИНАЛЬНЫЙ ГЕНИЙ</h3><p>Авторитет 1000</p><p id="ach5Status">❌</p></div>
+            </div>
+        </div>
+
+        <!-- СЕМЬЯ -->
+        <div id="family" class="section hidden">
+            <h3>👨‍👦 СЕМЕЙНОЕ ДРЕВО</h3>
+            <div class="card">
+                <p>Престиж: <span id="familyPrestige">0</span></p>
+                <p>Бонус династии: +<span id="familyBonus">0</span>% к доходу</p>
+                <button class="action-btn" onclick="doPrestige()">👑 СОЗДАТЬ НАСЛЕДНИКА (1 000 000$)</button>
+            </div>
+            <div id="familyHistory"></div>
+        </div>
+    </div>
+</div>
+
+<div id="notification" class="notification hidden"></div>
+
+<script>
+    // ==================== ИГРОВЫЕ ДАННЫЕ ====================
+    let game = {
+        companyName: 'Michael Market',
+        balance: 5000,
+        prestige: 0,
+        familyBonus: 0,
+        familyHistory: [],
+        rep: 0,
+        autoparkLevel: 0,
+        factorySlots: 2,
+        activeProductions: [],
+        unlockedTabs: {
+            factory: false,
+            mail: false,
+            weapon: false,
+            legal: false,
+            space: false,
+            reputation: false,
+            achievements: false,
+            family: false
+        },
+        achievements: {
+            novice: false,
+            elon: false,
+            specnaz: false,
+            million: false,
+            repKing: false
+        },
+        inventory: {
+            'Мак':0,'Конопля':0,'Подсолнух':0,'Базилик':0,'Эвкалипт':0,'Хмель':0,'Виноград':0,'Пшеница':0,
+            'Молоко':0,'Яйца':0,'Шерсть':0,'Мясо':0,
+            'Масло':0,'Лекарство':0,'Отвар':0,'Табак':0,'Специи':0,
+            'Ириски':0,'Сыр':0,'Майонез':0,'Пиво':0,'Вино':0,'Виски':0,'Сигары':0,
+            'Выдержанное вино':0,'Коллекционное вино':0,
+            'Солодовый виски':0,'18-летний виски':0,
+            'Эль':0,'Тёмный эль':0,
+            'Выдержанный сыр':0,'Голубой сыр':0,
+            'Мясо со специями':0,
+            'Металлолом':0,'Детали':0,'Пистолет':0,'Автомат':0,
+            'Упакованный товар':0,'Лунный камень':0
+        },
+        animals: {
+            'Корова':{count:0, milkTime:0},
+            'Курица':{count:0, eggsCollected:false},
+            'Овца':{count:0, shorn:false}
+        },
+        army: [],
+        satellites: [],
+        businesses: [],
+        stats: {income:0, expenses:0}
+    };
+
+    // ==================== НАЗВАНИЕ КОМПАНИИ ====================
+    function setCompanyName() {
+        let name = document.getElementById('companyNameInput').value.trim();
+        if (name) game.companyName = name;
+        document.getElementById('companyDisplay').innerText = '⚡ ' + game.companyName;
+        document.getElementById('companyNameHeader').innerText = game.companyName;
+        document.getElementById('nameScreen').classList.add('hidden');
+        document.getElementById('gameInterface').classList.remove('hidden');
+        showNotification('✅ Добро пожаловать, ' + game.companyName);
+        updateAll();
+        updateNavBar();
+        startDailyEvent();
+    }
+
+    // ==================== СОХРАНЕНИЕ ====================
+    function saveGame() {
+        localStorage.setItem('underground_empire_balanced', JSON.stringify(game));
+        showNotification('✅ Сохранено');
+    }
+    function loadGame() {
+        let d = localStorage.getItem('underground_empire_balanced');
+        if (d) { game = JSON.parse(d); updateAll(); updateNavBar(); showNotification('📂 Загружено'); }
+        else showNotification('❌ Нет сохранения', 'error');
+    }
+    function resetGame() {
+        if (confirm('Новая игра?')) { localStorage.removeItem('underground_empire_balanced'); location.reload(); }
+    }
+    function showNotification(msg, type = 'info') {
+        let n = document.getElementById('notification');
+        n.textContent = msg;
+        n.style.borderColor = type === 'error' ? '#f00' : '#0f0';
+        n.classList.remove('hidden');
+        setTimeout(() => n.classList.add('hidden'), 2000);
+    }
+
+    // ==================== НАВИГАЦИЯ ====================
+    function updateNavBar() {
+        let nav = document.getElementById('navBar');
+        nav.innerHTML = '';
+        addNavButton('🌱 ФЕРМА', 'farm');
+        addNavButton('🐄 ЖИВОТНЫЕ', 'animals');
+        addNavButton('⚗️ ЛАБА', 'lab');
+        addNavButton('📦 ИНВЕНТАРЬ', 'inventory');
+        addNavButton('🏪 МАГАЗИН', 'shop', 'shop');
+        if (game.unlockedTabs.factory) addNavButton('🏭 ЗАВОД', 'factory');
+        if (game.unlockedTabs.mail) addNavButton('📦 ПОЧТА', 'mail');
+        if (game.unlockedTabs.weapon) addNavButton('🔫 ОРУЖИЕ', 'weapon');
+        if (game.unlockedTabs.legal) addNavButton('🏦 ЛЕГАЛ', 'legal');
+        if (game.unlockedTabs.space) addNavButton('🚀 КОСМОС', 'space');
+        if (game.unlockedTabs.reputation) addNavButton('👑 АВТОРИТЕТ', 'reputation');
+        if (game.unlockedTabs.achievements) addNavButton('🏆 ДОСТИЖЕНИЯ', 'achievements');
+        if (game.unlockedTabs.family) addNavButton('👨‍👦 СЕМЬЯ', 'family');
+    }
+
+    function addNavButton(text, section, className = '') {
+        let btn = document.createElement('button');
+        btn.className = 'nav-btn' + (className ? ' ' + className : '');
+        btn.onclick = () => showSection(section);
+        btn.innerHTML = text;
+        document.getElementById('navBar').appendChild(btn);
+    }
+
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    // ==================== ПОКУПКА ВКЛАДОК ====================
+    function buyTab(tab, cost) {
+        let discount = Math.floor(game.rep / 20);
+        let finalCost = Math.floor(cost * (1 - discount/100));
+        if (game.balance < finalCost) return showNotification('❌ Денег нет', 'error');
+        if (game.unlockedTabs[tab]) return showNotification('❌ Уже куплено', 'error');
+
+        game.balance -= finalCost;
+        game.unlockedTabs[tab] = true;
+        game.stats.expenses += finalCost;
+        saveGame();
+        updateStats();
+        updateNavBar();
+        showNotification('✅ Вкладка куплена! Скидка ' + discount + '%');
+    }
+
+    // ==================== СОБЫТИЯ ====================
+    function startDailyEvent() {
+        setInterval(() => {
+            let events = [
+                { name: "Полицейский рейд", desc: "Потеряно 10% товара", action: () => { for(let k in game.inventory) game.inventory[k] = Math.floor(game.inventory[k] * 0.9); } },
+                { name: "Урожайный год", desc: "Урожайность +50% на 1 минуту", action: () => { game.tempBoost = 1.5; setTimeout(() => delete game.tempBoost, 60000); } },
+                { name: "Космический бум", desc: "Лунный камень x2 цена", action: () => { game.tempMoonPrice = 20000; setTimeout(() => delete game.tempMoonPrice, 60000); } },
+                { name: "Экономический кризис", desc: "Цены на продукты -20% на 1 минуту", action: () => { game.tempCrash = 0.8; setTimeout(() => delete game.tempCrash, 60000); } }
+            ];
+            let e = events[Math.floor(Math.random() * events.length)];
+            document.getElementById('eventTitle').innerText = '🎲 ' + e.name;
+            document.getElementById('eventDesc').innerText = e.desc;
+            e.action();
+            updateInventory();
+        }, 60000);
+    }
+
+    // ==================== БАЗОВЫЕ ФУНКЦИИ ====================
+    function plant(item, cost) {
+        if (game.balance < cost) return showNotification('❌ Денег нет', 'error');
+        game.balance -= cost;
+        game.inventory[item]++;
+        game.stats.expenses += cost;
+        updateStats(); updateCounts(); saveGame();
+    }
+
+    function buyAnimal(a, cost) {
+        if (game.balance < cost) return showNotification('❌ Денег нет', 'error');
+        game.balance -= cost;
+        game.animals[a].count++;
+        game.stats.expenses += cost;
+        updateStats(); updateCounts(); saveGame();
+    }
+
+    function milkAllCows() {
+        if (game.animals['Корова'].count === 0) return showNotification('❌ Нет коров', 'error');
+        let now = Date.now();
+        if (now - (game.animals['Корова'].milkTime || 0) < 60000) return showNotification('❌ Подождите минуту', 'error');
+        let amount = game.animals['Корова'].count * 3;
+        game.inventory['Молоко'] += amount;
+        game.animals['Корова'].milkTime = now;
+        updateInventory(); showNotification('🥛 +' + amount + ' молока'); saveGame();
+    }
+
+    function collectEggs() {
+        if (game.animals['Курица'].count < 1) return showNotification('❌ Нет кур', 'error');
+        let amount = game.animals['Курица'].count * 2;
+        game.inventory['Яйца'] += amount;
+        updateInventory(); showNotification('🥚 +' + amount + ' яиц'); saveGame();
+    }
+
+    function shearSheep() {
+        if (game.animals['Овца'].count < 1) return showNotification('❌ Нет овец', 'error');
+        let amount = game.animals['Овца'].count;
+        game.inventory['Шерсть'] += amount;
+        updateInventory(); showNotification('✂️ +' + amount + ' шерсти'); saveGame();
+    }
+
+    function butcherAnimal(animal, price) {
+        if (game.animals[animal].count < 1) return showNotification('❌ нет ' + animal, 'error');
+        game.animals[animal].count--;
+        game.balance += price;
+        game.inventory['Мясо']++;
+        game.stats.income += price;
+        updateStats(); updateCounts(); updateInventory(); saveGame();
+    }
+
+    // ==================== ПРОИЗВОДСТВО ====================
+    function produceReagent(product, ingredient) {
+        if (game.inventory[ingredient] < 1) return showNotification('❌ нет ' + ingredient, 'error');
+        game.inventory[ingredient]--;
+        game.inventory[product]++;
+        updateInventory(); saveGame();
+    }
+
+    function produceSimple(product, ingredient) {
+        if (game.inventory[ingredient] < 1) return showNotification('❌ нет ' + ingredient, 'error');
+        game.inventory[ingredient]--;
+        game.inventory[product]++;
+        updateInventory(); saveGame();
+    }
+
+    function produceFood(product, ingredients) {
+        for (let [k, v] of Object.entries(ingredients)) {
+            if (game.inventory[k] < v) return showNotification('❌ нет ' + k, 'error');
+        }
+        for (let [k, v] of Object.entries(ingredients)) game.inventory[k] -= v;
+        game.inventory[product]++;
+        updateInventory(); saveGame();
+    }
+
+    function produceSpicedMeat() {
+        if (game.inventory['Мясо'] < 1 || game.inventory['Специи'] < 1) return showNotification('❌ нужно мясо и специи', 'error');
+        game.inventory['Мясо']--; game.inventory['Специи']--;
+        game.inventory['Мясо со специями']++;
+        updateInventory(); saveGame();
+    }
+
+    // ==================== ДОЛГИЕ ПРОИЗВОДСТВА ====================
+    function startAgedProduction(inputItem, outputItem) {
+        if (game.activeProductions.length >= game.factorySlots) {
+            return showNotification('❌ Все слоты заняты', 'error');
+        }
+        if (game.inventory[inputItem] < 1) return showNotification('❌ нет ' + inputItem, 'error');
+
+        game.inventory[inputItem]--;
+        let prod = { id: Date.now() + Math.random(), outputItem, endTime: Date.now() + 60000 };
+        game.activeProductions.push(prod);
+        showNotification(`🔨 Производство ${outputItem} запущено (1 мин)`);
+        updateInventory(); saveGame();
+
+        setTimeout(() => {
+            let index = game.activeProductions.findIndex(p => p.id === prod.id);
+            if (index !== -1) {
+                game.activeProductions.splice(index, 1);
+                game.inventory[outputItem] = (game.inventory[outputItem] || 0) + 1;
+                showNotification(`✅ ${outputItem} готово!`);
+                updateInventory(); saveGame();
+            }
+        }, 60000);
+    }
+
+    // ==================== ПОЧТА ====================
+    function packAll() {
+        let count = 0;
+        let items = ['Масло','Лекарство','Отвар','Табак','Ириски','Сыр','Майонез','Пиво','Вино','Виски','Сигары',
+                    'Выдержанное вино','Коллекционное вино','Солодовый виски','18-летний виски',
+                    'Эль','Тёмный эль','Выдержанный сыр','Голубой сыр','Мясо со специями',
+                    'Пистолет','Автомат'];
+        for (let k of items) {
+            if (game.inventory[k] > 0) {
+                count += game.inventory[k];
+                game.inventory[k] = 0;
+            }
+        }
+        if (count) {
+            game.inventory['Упакованный товар'] += count;
+            showNotification('📦 упаковано ' + count + ' товаров');
+            updateInventory();
+        } else showNotification('❌ нечего упаковывать', 'error');
+    }
+
+    function transportOrder(bonus, risk, cost) {
+        if (game.inventory['Упакованный товар'] < 1) return showNotification('❌ нет упакованных товаров', 'error');
+        if (game.balance < cost) return showNotification('❌ нет денег на рейс', 'error');
+
+        let finalRisk = Math.max(0.05, risk - game.autoparkLevel * 0.05);
+        game.balance -= cost;
+        game.stats.expenses += cost;
+
+        if (Math.random() < finalRisk) {
+            game.inventory['Упакованный товар']--;
+            showNotification('❌ Груз потерян!', 'error');
+        } else {
+            let profit = Math.floor(cost * bonus);
+            game.balance += profit;
+            game.stats.income += profit;
+            showNotification('✅ Рейс успешен! +' + profit + '$');
+        }
+        updateInventory(); saveGame();
+    }
+
+    // ==================== ОРУЖИЕ ====================
+    function buyMetal() {
+        if (game.balance < 10) return showNotification('❌ Денег нет', 'error');
+        game.balance -= 10;
+        game.inventory['Металлолом']++;
+        game.stats.expenses += 10;
+        updateStats(); updateInventory(); saveGame();
+    }
+    function produceDetails() {
+        if (game.inventory['Металлолом'] < 5) return showNotification('❌ нужно 5 металлолома', 'error');
+        game.inventory['Металлолом'] -= 5;
+        game.inventory['Детали'] = (game.inventory['Детали'] || 0) + 1;
+        updateInventory(); saveGame();
+    }
+    function produceGun() {
+        if (game.inventory['Детали'] < 10) return showNotification('❌ нужно 10 деталей', 'error');
+        game.inventory['Детали'] -= 10;
+        game.inventory['Пистолет']++;
+        updateInventory(); saveGame();
+    }
+    function produceRifle() {
+        if (game.inventory['Детали'] < 20) return showNotification('❌ нужно 20 деталей', 'error');
+        game.inventory['Детали'] -= 20;
+        game.inventory['Автомат']++;
+        updateInventory(); saveGame();
+    }
+
+    // ==================== ЛЕГАЛИЗАЦИЯ ====================
+    function buyBusiness(type, cost, income) {
+        if (game.balance < cost) return showNotification('❌ Денег нет', 'error');
+        game.balance -= cost;
+        game.businesses.push({ type, income });
+        game.stats.expenses += cost;
+        updateStats(); saveGame();
+        let html = '';
+        game.businesses.forEach(b => html += `<div>✅ ${b.type}: +${b.income}$/сек</div>`);
+        document.getElementById('businessList').innerHTML = html;
+    }
+
+    // ==================== КОСМОС ====================
+    function buySatellite(cost, income) {
+        if (game.balance < cost) return showNotification('❌ Денег нет', 'error');
+        game.balance -= cost;
+        game.satellites.push({ income });
+        game.stats.expenses += cost;
+        saveGame(); updateStats(); showNotification('🛰️ Спутник запущен!');
+        checkAchievements();
+    }
+    function buyStation() {
+        if (game.balance < 1000000) return showNotification('❌ Нужно 1,000,000$', 'error');
+        game.balance -= 1000000;
+        game.satellites.push({ income: 5000 });
+        game.inventory['Лунный камень'] = (game.inventory['Лунный камень'] || 0) + 1;
+        game.stats.expenses += 1000000;
+        saveGame(); updateStats(); updateInventory(); showNotification('🛸 Станция построена!');
+    }
+
+    // ==================== АВТОРИТЕТ ====================
+    function donateMoney() {
+        if (game.balance < 10000) return showNotification('❌ Нужно 10 000$', 'error');
+        game.balance -= 10000;
+        game.rep = Math.min(1000, game.rep + 50);
+        game.stats.expenses += 10000;
+        updateReputation(); saveGame(); checkAchievements();
+    }
+    function updateReputation() {
+        let level = Math.floor(game.rep / 100) + 1;
+        document.getElementById('repLevel').innerText = level;
+        document.getElementById('repValue').innerText = game.rep;
+        document.getElementById('repProgress').style.width = (game.rep / 10) + '%';
+        document.getElementById('repBar').innerText = 'Авторитет: ' + game.rep;
+        document.getElementById('repDiscount').innerText = Math.floor(game.rep / 20);
+    }
+
+    // ==================== ДОСТИЖЕНИЯ ====================
+    function checkAchievements() {
+        if (!game.achievements.novice && game.stats.income >= 10000) {
+            game.achievements.novice = true;
+            game.balance += 500;
+            document.getElementById('ach1Status').innerText = '✅';
+            showNotification('🏆 Новичок! +500$');
+        }
+        if (!game.achievements.elon && game.satellites.length > 0) {
+            game.achievements.elon = true;
+            game.balance += 5000;
+            document.getElementById('ach2Status').innerText = '✅';
+            showNotification('🚀 Илон Маск! +5000$');
+        }
+        if (!game.achievements.specnaz && game.army.length >= 5) {
+            game.achievements.specnaz = true;
+            game.balance += 2000;
+            document.getElementById('ach3Status').innerText = '✅';
+            showNotification('💂 Спецназ! +2000$');
+        }
+        if (!game.achievements.million && game.balance >= 1000000) {
+            game.achievements.million = true;
+            game.balance += 50000;
+            document.getElementById('ach4Status').innerText = '✅';
+            showNotification('💰 Миллионер! +50000$');
+        }
+        if (!game.achievements.repKing && game.rep >= 1000) {
+            game.achievements.repKing = true;
+            game.balance += 100000;
+            document.getElementById('ach5Status').innerText = '✅';
+            showNotification('👑 Криминальный гений! +100000$');
+        }
+        saveGame();
+    }
+
+    // ==================== ПРЕСТИЖ ====================
+    function doPrestige() {
+        if (game.balance < 1000000) return showNotification('❌ нужно 1,000,000$', 'error');
+
+        game.familyHistory.push({
+            name: game.companyName,
+            prestige: game.prestige + 1
+        });
+
+        game.familyBonus += 10;
+        game.prestige++;
+
+        game.balance = 10000;
+        game.rep = 0;
+        Object.keys(game.inventory).forEach(k => game.inventory[k] = 0);
+        game.animals = {'Корова':{count:0,milkTime:0},'Курица':{count:0,eggsCollected:false},'Овца':{count:0,shorn:false}};
+        game.army = [];
+        game.satellites = [];
+        game.businesses = [];
+        game.activeProductions = [];
+        game.unlockedTabs = {
+            factory: false, mail: false, weapon: false, legal: false,
+            space: false, reputation: false, achievements: false, family: false
+        };
+
+        showNotification('👑 НОВАЯ ДИНАСТИЯ! Престиж ' + game.prestige + ', бонус +' + game.familyBonus + '%');
+        updateAll();
+        updateNavBar();
+        updateFamilyTree();
+        saveGame();
+    }
+
+    function updateFamilyTree() {
+        let history = '';
+        game.familyHistory.forEach((heir, index) => {
+            history += `<div>👑 Поколение ${index+1}: ${heir.name}</div>`;
+        });
+        document.getElementById('familyHistory').innerHTML = history || 'Пока нет наследников';
+        document.getElementById('familyPrestige').innerText = game.prestige;
+        document.getElementById('familyBonus').innerText = game.familyBonus;
+    }
+
+    // ==================== ПРОДАЖА ВСЕГО ====================
+    function sellAll() {
+        let prices = {
+            'Мак':30,'Конопля':25,'Подсолнух':40,'Базилик':35,'Эвкалипт':45,'Хмель':20,'Виноград':35,'Пшеница':15,
+            'Молоко':25,'Яйца':20,'Шерсть':35,'Мясо':50,
+            'Масло':100,'Лекарство':150,'Отвар':120,'Табак':90,'Специи':80,
+            'Ириски':400,'Сыр':200,'Майонез':180,'Пиво':150,'Вино':250,'Виски':300,'Сигары':250,
+            'Выдержанное вино':600,'Коллекционное вино':1200,
+            'Солодовый виски':800,'18-летний виски':1600,
+            'Эль':350,'Тёмный эль':700,
+            'Выдержанный сыр':450,'Голубой сыр':900,
+            'Мясо со специями':350,
+            'Пистолет':1000,'Автомат':2500,
+            'Упакованный товар':500,'Лунный камень': (game.tempMoonPrice || 10000)
+        };
+
+        let multiplier = (game.tempCrash || 1.0) * (1 + game.familyBonus / 100);
+        let total = 0;
+
+        for (let [item, price] of Object.entries(prices)) {
+            if (game.inventory[item] > 0) {
+                total += game.inventory[item] * price * multiplier;
+                game.inventory[item] = 0;
+            }
+        }
+
+        if (total) {
+            total = Math.floor(total);
+            game.balance += total;
+            game.stats.income += total;
+            showNotification('💰 +' + total + '$ (с бонусом)');
+            updateStats(); updateInventory(); checkAchievements();
+        } else showNotification('❌ ничего нет', 'error');
+    }
+
+    // ==================== ОБНОВЛЕНИЯ ====================
+    function updateAll() {
+        updateStats(); updateCounts(); updateInventory(); updateReputation(); updateFamilyTree();
+    }
+
+    function updateStats() {
+        document.getElementById('currentBalance').innerText = game.balance + '$';
+        document.getElementById('totalIncome').innerText = game.stats.income;
+        document.getElementById('totalExpenses').innerText = game.stats.expenses;
+        document.getElementById('netProfit').innerText = (game.stats.income - game.stats.expenses);
+    }
+
+    function updateCounts() {
+        document.getElementById('makCount').innerText = game.inventory['Мак'];
+        document.getElementById('konoplyaCount').innerText = game.inventory['Конопля'];
+        document.getElementById('podsoCount').innerText = game.inventory['Подсолнух'];
+        document.getElementById('bazilikCount').innerText = game.inventory['Базилик'];
+        document.getElementById('evkCount').innerText = game.inventory['Эвкалипт'];
+        document.getElementById('hmelCount').innerText = game.inventory['Хмель'];
+        document.getElementById('vinogradCount').innerText = game.inventory['Виноград'];
+        document.getElementById('pshenicaCount').innerText = game.inventory['Пшеница'];
+        document.getElementById('cowCount').innerText = game.animals['Корова'].count;
+        document.getElementById('chickenCount').innerText = game.animals['Курица'].count;
+        document.getElementById('sheepCount').innerText = game.animals['Овца'].count;
+        document.getElementById('moonStoneCount').innerText = game.inventory['Лунный камень'] || 0;
+        let t = game.animals['Корова'].milkTime ? Math.max(0, 60 - Math.floor((Date.now() - game.animals['Корова'].milkTime)/1000)) : 0;
+        document.getElementById('milkTimer').innerText = t ? '⏳ '+t+'с' : '✅ готово';
+    }
+
+    function updateInventory() {
+        let html = '';
+        for (let [item, count] of Object.entries(game.inventory)) {
+            if (count > 0) html += `<div class="inventory-item">${item}: ${count}</div>`;
+        }
+        document.getElementById('inventoryList').innerHTML = html || '<div>пусто</div>';
+    }
+
+    // Пассивный доход
+    setInterval(() => {
+        let inc = 0;
+        game.businesses.forEach(b => inc += b.income);
+        game.satellites.forEach(s => inc += s.income);
+        if (inc) {
+            game.balance += inc;
+            game.stats.income += inc;
+            updateStats();
+        }
+        updateCounts();
+    }, 1000);
+
+    // Инициализация
+    updateAll();
+    updateNavBar();
+</script>
+</body>
+</html>
