@@ -286,8 +286,34 @@
             "developer": "Roman",
             "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/stalker"
         }
+    },
+    {
+        "id": "pi",
+        "icon": "red",
+        "iconClass": "",
+        "iconUrl": "https://s10.iimage.su/s/03/g8MKKTdx7nwLqrDXJjJtbVM66qnU9q0vMfJ7KPN1l.png",
+        "name": "Подпольная империя",
+        "category": "Игры",
+        "categoryTag": "games",
+        "fullData": {
+            "iconUrl": "https://s10.iimage.su/s/03/g8MKKTdx7nwLqrDXJjJtbVM66qnU9q0vMfJ7KPN1l.png",
+            "iconClass": "",
+            "title": "Подпольная империя",
+            "rating": "<i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star'></i><i class='fas fa-star-half-alt'></i> 4.8",
+            "size": "-",
+            "age": "6+",
+            "tags": ["games", "pi"],
+            "description": "Построй свою империю тёмного бизнеса!",
+            "gallery": [
+                
+            ],
+            "additional": ["3 марта 2026"],
+            "developer": "Roman",
+            "downloadUrl": "https://michael-studio.github.io/Michael-s-Market-Apps/pi"
+        }
     }
 ]
+
 
 
 
